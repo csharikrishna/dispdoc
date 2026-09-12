@@ -346,6 +346,7 @@ const App = {
 
         this.setupEventListeners();
         this.setupTouchGestures();
+        this.setupDraggableHud();
         this.setupReviverDrag();
         this.resizeCanvas();
         this.checkWarningStatus();
@@ -470,12 +471,7 @@ const App = {
                         this.burnInIndex = (this.burnInIndex + 1) % this.burnInColors.length;
                         this.drawBurnIn();
                     } else if (this.isRunning) {
-                        const runnerBar = document.getElementById('testRunnerBar');
-                        if (runnerBar && runnerBar.classList.contains('runner-hidden')) {
-                            this.revealControls();
-                        } else {
-                            this.handleUserActivity();
-                        }
+                        this.toggleControls();
                     }
                 }
             }
@@ -487,7 +483,7 @@ const App = {
                 this.burnInIndex = (this.burnInIndex + 1) % this.burnInColors.length;
                 this.drawBurnIn();
             } else if (this.isRunning) {
-                this.revealControls();
+                this.toggleControls();
             }
         });
 
@@ -640,8 +636,8 @@ const App = {
         const pauseBtn = document.getElementById('btnPauseTest');
         if (pauseBtn) pauseBtn.addEventListener('click', () => this.togglePause());
 
-        const revealBtn = document.getElementById('btnRevealControls');
-        if (revealBtn) revealBtn.addEventListener('click', () => this.revealControls());
+        const hideHudBtn = document.getElementById('btnHideHud');
+        if (hideHudBtn) hideHudBtn.addEventListener('click', () => this.hideControls());
 
         // 7. Interactive Runner Segment Groups
         document.querySelectorAll('#nearBlackControls .seg-btn').forEach(btn => {
@@ -765,33 +761,131 @@ const App = {
     handleUserActivity() {
         document.body.style.cursor = 'default';
         const runnerBar = document.getElementById('testRunnerBar');
-        const revealBtn = document.getElementById('btnRevealControls');
 
         if (this.isRunning) {
             if (runnerBar && runnerBar.classList.contains('runner-hidden')) {
                 runnerBar.classList.remove('runner-hidden');
             }
-            if (revealBtn) revealBtn.style.display = 'none';
 
             clearTimeout(this.idleTimer);
             this.idleTimer = setTimeout(() => {
                 if (this.isRunning) {
                     if (runnerBar) runnerBar.classList.add('runner-hidden');
-                    if (revealBtn) revealBtn.style.display = 'block';
                     document.body.style.cursor = 'none';
                 }
-            }, 3000);
+            }, 2400);
         }
     },
 
-    revealControls() {
+    hideControls() {
         const runnerBar = document.getElementById('testRunnerBar');
-        const revealBtn = document.getElementById('btnRevealControls');
+        if (runnerBar) runnerBar.classList.add('runner-hidden');
+        document.body.style.cursor = 'none';
+        AudioEngine.playClick();
+    },
+
+    showControls() {
+        const runnerBar = document.getElementById('testRunnerBar');
         if (runnerBar) runnerBar.classList.remove('runner-hidden');
-        if (revealBtn) revealBtn.style.display = 'none';
         document.body.style.cursor = 'default';
         AudioEngine.playClick();
         this.handleUserActivity();
+    },
+
+    toggleControls() {
+        const runnerBar = document.getElementById('testRunnerBar');
+        if (runnerBar && runnerBar.classList.contains('runner-hidden')) {
+            this.showControls();
+        } else {
+            this.hideControls();
+        }
+    },
+
+    // Draggable Runner HUD (Mouse & Touch)
+    setupDraggableHud() {
+        const bar = document.getElementById('testRunnerBar');
+        const handle = document.getElementById('runnerDragHandle');
+        if (!bar || !handle) return;
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+
+        const onStart = (clientX, clientY) => {
+            isDragging = true;
+            startX = clientX;
+            startY = clientY;
+            const rect = bar.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            bar.style.bottom = 'auto';
+            bar.style.right = 'auto';
+            bar.style.transform = 'none';
+            bar.style.left = `${initialLeft}px`;
+            bar.style.top = `${initialTop}px`;
+            bar.classList.add('is-dragging');
+        };
+
+        const onMove = (clientX, clientY) => {
+            if (!isDragging) return;
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            let newLeft = initialLeft + dx;
+            let newTop = initialTop + dy;
+
+            const maxLeft = window.innerWidth - bar.offsetWidth - 8;
+            const maxTop = window.innerHeight - bar.offsetHeight - 8;
+            newLeft = Math.max(8, Math.min(newLeft, maxLeft));
+            newTop = Math.max(8, Math.min(newTop, maxTop));
+
+            bar.style.left = `${newLeft}px`;
+            bar.style.top = `${newTop}px`;
+        };
+
+        const onEnd = () => {
+            if (isDragging) {
+                isDragging = false;
+                bar.classList.remove('is-dragging');
+                this.handleUserActivity();
+            }
+        };
+
+        handle.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onStart(e.clientX, e.clientY);
+        });
+
+        handle.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            bar.style.left = '50%';
+            bar.style.top = 'auto';
+            bar.style.bottom = 'max(20px, env(safe-area-inset-bottom) + 8px)';
+            bar.style.transform = 'translateX(-50%)';
+            AudioEngine.playClick();
+            this.showToast('HUD Position Reset');
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) onMove(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', onEnd);
+
+        handle.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                onStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) {
+                onMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', onEnd);
     },
 
     handleKeyDown(e) {
@@ -830,6 +924,10 @@ const App = {
             case 'f':
                 e.preventDefault();
                 this.toggleFullscreen();
+                break;
+            case 'h':
+                e.preventDefault();
+                this.toggleControls();
                 break;
             case 's':
                 e.preventDefault();
@@ -956,7 +1054,37 @@ const App = {
         this.currentMode = mode;
         Telemetry.reset();
 
-        // Switch View Modes: Hide Dashboard Hub, Show Test Runner Bar
+        // 1. Clean canvas reset to solid black (eliminates all transition glitches)
+        this.ctx.save();
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.globalAlpha = 1.0;
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        this.ctx.restore();
+
+        // 2. Clear 32-bit noise buffer
+        if (this.noiseBuf32) {
+            this.noiseBuf32.fill(0xFF000000);
+        }
+
+        // 3. Reset test-specific states
+        this.particles = [];
+        this.drops = [];
+        this.touchGridHits.clear();
+        this.strobeState = false;
+
+        // 4. Hide Pixel Reviver box UNLESS active mode is pixel-reviver
+        const reviverEl = document.getElementById('pixelReviver');
+        if (reviverEl) {
+            if (mode === 'pixel-reviver' && !this.reviverFullscreen) {
+                reviverEl.style.display = 'flex';
+            } else {
+                reviverEl.style.display = 'none';
+            }
+        }
+
+        // 5. Switch View Modes: Hide Dashboard Hub, Show Test Runner Bar
         const dashboard = document.getElementById('dashboardView');
         if (dashboard) dashboard.style.display = 'none';
 
@@ -965,9 +1093,6 @@ const App = {
             runnerBar.style.display = 'flex';
             runnerBar.classList.remove('runner-hidden');
         }
-
-        const revealBtn = document.getElementById('btnRevealControls');
-        if (revealBtn) revealBtn.style.display = 'none';
 
         // Auto-Fullscreen if option is enabled
         const autoCheck = document.getElementById('autoFullscreenCheck');
@@ -1071,9 +1196,6 @@ const App = {
             runnerBar.classList.remove('runner-hidden');
         }
 
-        const revealBtn = document.getElementById('btnRevealControls');
-        if (revealBtn) revealBtn.style.display = 'none';
-
         const safetyBadge = document.getElementById('safetyBadge');
         if (safetyBadge) safetyBadge.style.display = 'none';
 
@@ -1170,20 +1292,6 @@ const App = {
     drawOledBlack() {
         this.ctx.fillStyle = '#000000';
         this.ctx.fillRect(0, 0, this.width, this.height);
-
-        let showHint = true;
-        setTimeout(() => { showHint = false; }, 2000);
-        
-        const renderHint = () => {
-            if (!showHint || this.currentMode !== 'oled-black') return;
-            this.ctx.fillStyle = '#000000';
-            this.ctx.fillRect(0, 0, this.width, this.height);
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-            this.ctx.font = `${11 * this.dpr}px "JetBrains Mono"`;
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('0-NIT TRUE BLACK // PIXELS OFF // TAP TO WAKE', this.width / 2, this.height - 30 * this.dpr);
-        };
-        renderHint();
     },
 
     // 2. Near-Black Banding (1% to 20% IRE)
@@ -1720,14 +1828,29 @@ const App = {
     // VISUAL STRESS & BENCHMARK ENGINES
     // ======================================================================
 
-    // 19. Fast TV Static (Bitwise XorShift32 PRNG)
+    // 19. Fast TV Static (Bitwise XorShift32 PRNG - 0 Moire Stripes)
     drawTvStatic() {
         if (!this.noiseBuf32) return;
-        const len = this.noiseBuf32.length;
-        const skip = Math.max(1, 11 - this.intensity);
-
-        for (let i = 0; i < len; i += skip) {
-            this.noiseBuf32[i] = (this.rng.next() & 1) ? 0xFFFFFFFF : 0xFF000000;
+        const buf = this.noiseBuf32;
+        const len = buf.length;
+        for (let i = 0; i < len; i += 16) {
+            const r = this.rng.next();
+            buf[i]      = (r & 1) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 1]  = (r & 2) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 2]  = (r & 4) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 3]  = (r & 8) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 4]  = (r & 16) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 5]  = (r & 32) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 6]  = (r & 64) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 7]  = (r & 128) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 8]  = (r & 256) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 9]  = (r & 512) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 10] = (r & 1024) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 11] = (r & 2048) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 12] = (r & 4096) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 13] = (r & 8192) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 14] = (r & 16384) ? 0xFFFFFFFF : 0xFF000000;
+            buf[i + 15] = (r & 32768) ? 0xFFFFFFFF : 0xFF000000;
         }
         this.ctx.putImageData(this.noiseData, 0, 0);
     },
@@ -1735,11 +1858,15 @@ const App = {
     // 20. High-Throughput RGB Noise
     drawRgbNoise() {
         if (!this.noiseBuf32) return;
-        const len = this.noiseBuf32.length;
-        const skip = Math.max(1, 11 - this.intensity);
-
-        for (let i = 0; i < len; i += skip) {
-            this.noiseBuf32[i] = 0xFF000000 | (this.rng.next() & 0x00FFFFFF);
+        const buf = this.noiseBuf32;
+        const len = buf.length;
+        for (let i = 0; i < len; i += 4) {
+            const r1 = this.rng.next();
+            const r2 = this.rng.next();
+            buf[i]     = 0xFF000000 | (r1 & 0x00FFFFFF);
+            buf[i + 1] = 0xFF000000 | ((r1 >> 8) & 0x00FFFFFF);
+            buf[i + 2] = 0xFF000000 | (r2 & 0x00FFFFFF);
+            buf[i + 3] = 0xFF000000 | ((r2 >> 8) & 0x00FFFFFF);
         }
         this.ctx.putImageData(this.noiseData, 0, 0);
     },
@@ -1748,6 +1875,8 @@ const App = {
     particles: [],
     initParticles() {
         this.particles = [];
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.width, this.height);
         const isMobile = window.innerWidth <= 768;
         const count = (isMobile ? 120 : 250) * this.intensity;
         for (let i = 0; i < count; i++) {
