@@ -31,12 +31,12 @@
                 These patterns may trigger discomfort or seizures in photosensitive individuals. Discontinue use immediately if you experience dizziness, nausea, or visual fatigue.
             </p>
             <div class="warning-actions">
-                <label class="checkbox-container">
-                    <input type="checkbox" id="enterFullscreenWarningCheck">
+                <label class="checkbox-container" id="enterFullscreenWarningLabel">
+                    <input type="checkbox" id="enterFullscreenWarningCheck" checked>
                     <span class="checkmark"></span>
-                    <strong>Enter Fullscreen & Remember Choice</strong>
+                    <strong>Always Launch Tests in Fullscreen Mode</strong>
                 </label>
-                <button id="acceptWarningBtn" class="btn-cta">I Understand & Open Studio</button>
+                <button id="acceptWarningBtn" class="btn-cta">I Understand & Enter Studio</button>
             </div>
         </div>
     </div>
@@ -78,6 +78,9 @@
 
             <!-- Header Tool Actions -->
             <div class="header-tools">
+                <button id="btnRunAllTestsHeader" class="btn-tool btn-test-all" title="Run All 24 Display Tests in Fullscreen Sequence">
+                    <span>⚡</span> <span class="tool-text">TEST ALL</span>
+                </button>
                 <button id="btnToggleTheme" class="btn-tool" title="Toggle Light / Dark Theme">
                     <span id="themeIcon">☀️</span> <span class="tool-text" id="themeLabel">Light</span>
                 </button>
@@ -125,6 +128,22 @@
                     <input type="checkbox" id="autoFullscreenCheck" checked>
                     <span class="toggle-label">Auto Fullscreen</span>
                 </label>
+            </div>
+        </section>
+
+        <!-- Quick Action Hero Bar: Full Test Suite -->
+        <section class="hero-action-bar">
+            <div class="hero-action-left">
+                <div class="hero-action-icon">⚡</div>
+                <div class="hero-action-text">
+                    <h3>FULL PANEL DIAGNOSTIC SUITE (TEST ALL)</h3>
+                    <p>Automated 24-step fullscreen calibration covering OLED 0-nit black, uniformity, pixel response, gamma, and stress tests.</p>
+                </div>
+            </div>
+            <div class="hero-action-right">
+                <button id="btnRunAllTestsHero" class="btn-test-all-hero" title="Run All 24 Tests in Fullscreen Mode">
+                    <span>▶ RUN ALL TESTS (FULLSCREEN)</span>
+                </button>
             </div>
         </section>
 
@@ -514,6 +533,11 @@
 
         <!-- Right: Actions & Navigation -->
         <div class="runner-right">
+            <div id="testAllBadge" class="test-all-badge" style="display: none;" title="Test All Automated Sequence">
+                <span class="pulse-icon">⚡</span>
+                <span id="testAllStepText">1/24</span>
+                <span id="testAllCountdown" class="countdown-tag">4s</span>
+            </div>
             <div class="safety-indicator" id="safetyBadge" style="display: none;">
                 <span>⏱</span> <span id="safetyTimerText">15s</span>
             </div>

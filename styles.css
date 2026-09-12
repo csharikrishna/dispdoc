@@ -275,6 +275,22 @@ html, body {
     box-shadow: 0 6px 20px var(--accent-glow);
 }
 
+.btn-test-all {
+    background: linear-gradient(135deg, #00f3ff, #7928ca);
+    color: #ffffff !important;
+    border: 1px solid rgba(0, 243, 255, 0.4) !important;
+    box-shadow: 0 0 16px rgba(0, 243, 255, 0.35);
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 7px 16px;
+    transition: all 0.25s ease;
+}
+
+.btn-test-all:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 0 24px rgba(0, 243, 255, 0.6);
+}
+
 /* --------------------------------------------------------------------------
    4. Display Hardware Specs Banner
    -------------------------------------------------------------------------- */
@@ -341,6 +357,83 @@ html, body {
     width: 15px;
     height: 15px;
     accent-color: var(--accent);
+}
+
+/* Quick Action Hero Bar */
+.hero-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.08), rgba(121, 40, 202, 0.08));
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s ease;
+}
+
+.hero-action-bar:hover {
+    border-color: var(--border-highlight);
+    box-shadow: 0 8px 30px rgba(0, 243, 255, 0.12);
+}
+
+.hero-action-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.hero-action-icon {
+    font-size: 22px;
+    min-width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(121, 40, 202, 0.25));
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+}
+
+.hero-action-text h3 {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+    margin: 0 0 3px 0;
+}
+
+.hero-action-text p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.btn-test-all-hero {
+    background: linear-gradient(135deg, #00f3ff, #7928ca);
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+}
+
+.btn-test-all-hero:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.65);
 }
 
 /* --------------------------------------------------------------------------
@@ -1262,6 +1355,29 @@ html, body {
     border-radius: 50px;
 }
 
+.test-all-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.15), rgba(121, 40, 202, 0.2));
+    border: 1px solid var(--border-highlight);
+    border-radius: 50px;
+    padding: 3px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.countdown-tag {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--text-main);
+}
+
 /* --------------------------------------------------------------------------
    11. Responsive Breakpoints
    -------------------------------------------------------------------------- */
@@ -1280,6 +1396,15 @@ html, body {
     .spec-options {
         width: 100%;
         margin-left: 0;
+    }
+    .hero-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+    }
+    .btn-test-all-hero {
+        justify-content: center;
+        width: 100%;
     }
 }
 

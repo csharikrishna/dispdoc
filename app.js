@@ -274,17 +274,25 @@ const App = {
     autoCycleIndex: 0,
     autoCycleList: ['tv-static', 'rgb-noise', 'particles', 'matrix-rain', 'gradient-storm', 'rainbow'],
 
+    // Test All Auto-Runner State
+    isTestAllActive: false,
+    testAllIndex: 0,
+    testAllDuration: 4000,
+    testAllTimer: null,
+    testAllCountdownInterval: null,
+    testAllRemainingSec: 4,
+
     idleTimer: null,
     toastTimer: null,
     isStatsVisible: false,
     rng: new FastRNG(Date.now()),
 
     testModesList: [
-        'oled-black', 'near-black', 'burnin', 'pixel-reviver', 'subpixel', 'abl',
+        'oled-black', 'near-black', 'burnin', 'subpixel', 'abl',
         'ufo-motion', 'backlight-bleed', 'viewing-angle', 'sharpness',
         'phone-burnin', 'pwm-flicker', 'touch-grid',
         'grayscale', 'gamma', 'black-clipping', 'white-clipping', 'color-banding',
-        'tv-static', 'rgb-noise', 'particles', 'matrix-rain', 'strobe', 'autocycle'
+        'tv-static', 'rgb-noise', 'particles', 'matrix-rain', 'gradient-storm', 'rainbow', 'pixel-reviver'
     ],
 
     testNames: {
@@ -348,6 +356,7 @@ const App = {
         this.setupTouchGestures();
         this.setupDraggableHud();
         this.setupReviverDrag();
+        this.setupFullscreenListeners();
         this.resizeCanvas();
         this.checkWarningStatus();
 
@@ -368,7 +377,7 @@ const App = {
         AudioEngine.init();
         AudioEngine.playClick();
         const warningCheck = document.getElementById('enterFullscreenWarningCheck');
-        if (warningCheck && warningCheck.checked) {
+        if (!warningCheck || warningCheck.checked) {
             localStorage.setItem('dispdoc_warning_accepted', 'true');
             localStorage.setItem('dispdoc_autofullscreen', 'true');
             const autoCheck = document.getElementById('autoFullscreenCheck');
@@ -383,7 +392,7 @@ const App = {
             modal.style.opacity = '0';
             setTimeout(() => { modal.style.display = 'none'; }, 250);
         }
-        this.showToast('Diagnostics Ready // Select Any Test');
+        this.showToast('Diagnostics Ready // Fullscreen Active');
     },
 
     showToast(message, duration = 2200) {
@@ -554,18 +563,30 @@ const App = {
         if (acceptBtn) acceptBtn.addEventListener('click', () => this.acceptWarning());
 
         const warningCheck = document.getElementById('enterFullscreenWarningCheck');
+        const warningLabel = document.getElementById('enterFullscreenWarningLabel');
+        const triggerWarningFs = () => {
+            if (warningCheck && warningCheck.checked) {
+                this.requestFullscreen();
+                localStorage.setItem('dispdoc_autofullscreen', 'true');
+                const autoCheck = document.getElementById('autoFullscreenCheck');
+                if (autoCheck) autoCheck.checked = true;
+            }
+        };
         if (warningCheck) {
-            warningCheck.addEventListener('change', () => {
-                if (warningCheck.checked) {
-                    this.requestFullscreen();
-                    localStorage.setItem('dispdoc_autofullscreen', 'true');
-                    const autoCheck = document.getElementById('autoFullscreenCheck');
-                    if (autoCheck) autoCheck.checked = true;
-                }
-            });
+            warningCheck.addEventListener('click', triggerWarningFs);
+            warningCheck.addEventListener('change', triggerWarningFs);
+        }
+        if (warningLabel) {
+            warningLabel.addEventListener('click', () => setTimeout(triggerWarningFs, 10));
         }
 
-        // 2. Dashboard Header Tools
+        // 2. Dashboard Header & Hero Tools
+        const runAllHeader = document.getElementById('btnRunAllTestsHeader');
+        if (runAllHeader) runAllHeader.addEventListener('click', () => this.startTestAll());
+
+        const runAllHero = document.getElementById('btnRunAllTestsHero');
+        if (runAllHero) runAllHero.addEventListener('click', () => this.startTestAll());
+
         const themeBtn = document.getElementById('btnToggleTheme');
         if (themeBtn) themeBtn.addEventListener('click', () => ThemeEngine.toggle());
 
@@ -601,20 +622,29 @@ const App = {
             const saved = localStorage.getItem('dispdoc_autofullscreen');
             if (saved !== null) {
                 autoCheck.checked = saved === 'true';
+            } else {
+                autoCheck.checked = true;
             }
-            autoCheck.addEventListener('change', () => {
+            autoCheck.addEventListener('click', () => {
                 localStorage.setItem('dispdoc_autofullscreen', autoCheck.checked);
                 if (autoCheck.checked) {
                     this.requestFullscreen();
                 }
                 AudioEngine.playClick();
             });
+            autoCheck.addEventListener('change', () => {
+                localStorage.setItem('dispdoc_autofullscreen', autoCheck.checked);
+            });
         }
 
-        // 5. Test Card Clicks (Launch Test)
+        // 5. Test Card Clicks (Launch Test with Synchronous Fullscreen Trigger)
         document.querySelectorAll('.test-card').forEach(card => {
             card.addEventListener('mouseenter', () => AudioEngine.playHover());
             card.addEventListener('click', () => {
+                const autoCheck = document.getElementById('autoFullscreenCheck');
+                if (!autoCheck || autoCheck.checked) {
+                    this.requestFullscreen();
+                }
                 const mode = card.getAttribute('data-mode');
                 if (mode) {
                     AudioEngine.playClick();
@@ -959,32 +989,230 @@ const App = {
         AudioEngine.playClick();
     },
 
+    // Fullscreen Listeners & Resilient Request
+    setupFullscreenListeners() {
+        const onFsChange = () => {
+            const isFs = !!(document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement);
+            this.updateFullscreenUi(isFs);
+            this.resizeCanvas();
+        };
+
+        document.addEventListener('fullscreenchange', onFsChange);
+        document.addEventListener('webkitfullscreenchange', onFsChange);
+        document.addEventListener('mozfullscreenchange', onFsChange);
+        document.addEventListener('MSFullscreenChange', onFsChange);
+    },
+
+    updateFullscreenUi(isFs) {
+        const fsBtn = document.getElementById('btnToggleFullscreen');
+        if (fsBtn) {
+            fsBtn.classList.toggle('active', isFs);
+            fsBtn.title = isFs ? 'Exit Fullscreen (F)' : 'Toggle Fullscreen (F)';
+        }
+    },
+
     requestFullscreen() {
         try {
-            if (!document.fullscreenElement) {
-                const docEl = document.documentElement;
-                if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-                else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-                else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+            const isFs = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement || 
+                         document.msFullscreenElement;
+            if (isFs) return;
+
+            const docEl = document.documentElement;
+            const req = docEl.requestFullscreen || 
+                        docEl.webkitRequestFullscreen || 
+                        docEl.webkitRequestFullScreen || 
+                        docEl.mozRequestFullScreen || 
+                        docEl.msRequestFullscreen;
+
+            if (req) {
+                const res = req.call(docEl);
+                if (res && typeof res.then === 'function') {
+                    res.then(() => {
+                        this.updateFullscreenUi(true);
+                    }).catch(err => {
+                        console.warn('Fullscreen request rejected by browser:', err);
+                        this.showToast('Press F11 for Fullscreen (Browser Security)', 2800);
+                    });
+                }
             }
         } catch (e) {
-            // Fullscreen might require direct user gesture on some browsers
+            console.warn('Fullscreen invocation error:', e);
+        }
+    },
+
+    exitFullscreen() {
+        try {
+            const isFs = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement || 
+                         document.msFullscreenElement;
+            if (!isFs) return;
+
+            const exit = document.exitFullscreen || 
+                         document.webkitExitFullscreen || 
+                         document.mozCancelFullScreen || 
+                         document.msExitFullscreen;
+            if (exit) {
+                const res = exit.call(document);
+                if (res && typeof res.catch === 'function') {
+                    res.catch(() => {});
+                }
+            }
+        } catch (e) {
+            console.warn('Exit fullscreen error:', e);
         }
     },
 
     toggleFullscreen() {
-        try {
-            if (!document.fullscreenElement) {
-                this.requestFullscreen();
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                else if (document.msExitFullscreen) document.msExitFullscreen();
-            }
-            AudioEngine.playClick();
-        } catch (e) {
-            // Non-blocking
+        const isFs = document.fullscreenElement || 
+                     document.webkitFullscreenElement || 
+                     document.mozFullScreenElement || 
+                     document.msFullscreenElement;
+        if (!isFs) {
+            this.requestFullscreen();
+        } else {
+            this.exitFullscreen();
         }
+        AudioEngine.playClick();
+    },
+
+    // =========================================================================
+    // Test All Automated Suite
+    // =========================================================================
+    startTestAll() {
+        // Synchronously invoke fullscreen during user gesture!
+        this.requestFullscreen();
+
+        this.isTestAllActive = true;
+        this.testAllIndex = 0;
+        AudioEngine.playClick();
+        this.showToast('⚡ Starting Full Test All Suite (24 Tests)', 2600);
+
+        this.runTestAllStep();
+    },
+
+    runTestAllStep() {
+        if (!this.isTestAllActive) return;
+
+        if (this.testAllIndex >= this.testModesList.length) {
+            this.finishTestAll();
+            return;
+        }
+
+        const mode = this.testModesList[this.testAllIndex];
+        this.start(mode);
+
+        // Update Test All Badge in HUD
+        const badge = document.getElementById('testAllBadge');
+        const stepText = document.getElementById('testAllStepText');
+        if (badge) badge.style.display = 'flex';
+        if (stepText) stepText.textContent = `${this.testAllIndex + 1}/${this.testModesList.length}`;
+
+        this.resetTestAllCountdown();
+    },
+
+    resetTestAllCountdown() {
+        clearTimeout(this.testAllTimer);
+        clearInterval(this.testAllCountdownInterval);
+
+        if (this.isPaused) return;
+
+        this.testAllRemainingSec = 4;
+        this.updateCountdownText();
+
+        this.testAllCountdownInterval = setInterval(() => {
+            if (!this.isPaused && this.isTestAllActive) {
+                this.testAllRemainingSec--;
+                this.updateCountdownText();
+                if (this.testAllRemainingSec <= 0) {
+                    clearInterval(this.testAllCountdownInterval);
+                }
+            }
+        }, 1000);
+
+        this.testAllTimer = setTimeout(() => {
+            if (this.isTestAllActive && !this.isPaused) {
+                this.testAllIndex++;
+                this.runTestAllStep();
+            }
+        }, this.testAllDuration);
+    },
+
+    resumeTestAllCountdown() {
+        clearTimeout(this.testAllTimer);
+        clearInterval(this.testAllCountdownInterval);
+        this.updateCountdownText();
+
+        const remainingMs = Math.max(1000, this.testAllRemainingSec * 1000);
+
+        this.testAllCountdownInterval = setInterval(() => {
+            if (!this.isPaused && this.isTestAllActive) {
+                this.testAllRemainingSec--;
+                this.updateCountdownText();
+                if (this.testAllRemainingSec <= 0) {
+                    clearInterval(this.testAllCountdownInterval);
+                }
+            }
+        }, 1000);
+
+        this.testAllTimer = setTimeout(() => {
+            if (this.isTestAllActive && !this.isPaused) {
+                this.testAllIndex++;
+                this.runTestAllStep();
+            }
+        }, remainingMs);
+    },
+
+    updateCountdownText() {
+        const countdownEl = document.getElementById('testAllCountdown');
+        if (countdownEl) {
+            countdownEl.textContent = this.isPaused ? 'PAUSED' : `${this.testAllRemainingSec}s`;
+        }
+    },
+
+    stopTestAll() {
+        this.isTestAllActive = false;
+        clearTimeout(this.testAllTimer);
+        clearInterval(this.testAllCountdownInterval);
+        const badge = document.getElementById('testAllBadge');
+        if (badge) badge.style.display = 'none';
+    },
+
+    finishTestAll() {
+        this.stopTestAll();
+        this.stop();
+        AudioEngine.playSuccess();
+        this.showToast('✓ All 24 Display Tests Completed!', 3800);
+        setTimeout(() => {
+            this.openReport();
+        }, 600);
+    },
+
+    navigateTest(direction) {
+        AudioEngine.playClick();
+        if (this.isTestAllActive) {
+            this.testAllIndex = Math.max(0, Math.min(this.testModesList.length - 1, this.testAllIndex + direction));
+            this.runTestAllStep();
+            return;
+        }
+
+        if (!this.currentMode) {
+            this.start(this.testModesList[0]);
+            return;
+        }
+
+        const currentIndex = this.testModesList.indexOf(this.currentMode);
+        let nextIndex = currentIndex !== -1 ? currentIndex + direction : 0;
+        if (nextIndex < 0) nextIndex = this.testModesList.length - 1;
+        if (nextIndex >= this.testModesList.length) nextIndex = 0;
+
+        const nextMode = this.testModesList[nextIndex];
+        this.start(nextMode);
     },
 
     togglePause() {
@@ -993,6 +1221,16 @@ const App = {
         if (icon) icon.textContent = this.isPaused ? '▶' : '⏸';
         AudioEngine.playTone(this.isPaused ? 300 : 600, 0.08, 'sine');
         this.showToast(this.isPaused ? 'Test Paused (Space)' : 'Test Resumed');
+
+        if (this.isTestAllActive) {
+            if (this.isPaused) {
+                clearTimeout(this.testAllTimer);
+                clearInterval(this.testAllCountdownInterval);
+                this.updateCountdownText();
+            } else {
+                this.resumeTestAllCountdown();
+            }
+        }
     },
 
     // Mouse & Touch Drag on Reviver Box
@@ -1096,8 +1334,14 @@ const App = {
 
         // Auto-Fullscreen if option is enabled
         const autoCheck = document.getElementById('autoFullscreenCheck');
-        if (autoCheck && autoCheck.checked) {
+        if (!autoCheck || autoCheck.checked) {
             this.requestFullscreen();
+        }
+
+        // Hide Test All badge if manual test launched
+        const testAllBadge = document.getElementById('testAllBadge');
+        if (testAllBadge && !this.isTestAllActive) {
+            testAllBadge.style.display = 'none';
         }
 
         // Update Runner Test Name
@@ -1166,6 +1410,10 @@ const App = {
     },
 
     stop() {
+        if (this.isTestAllActive) {
+            this.stopTestAll();
+        }
+
         this.isRunning = false;
         this.isPaused = false;
         this.currentMode = null;
