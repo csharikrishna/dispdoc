@@ -1,154 +1,543 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
-    <meta name="description" content="DisplayDoctor Pro - Ultimate Display Diagnostics & Calibration Suite for Mobile, Tablet & Desktop. Certified OLED burn-in, IPS backlight bleed, UFO ghosting, and stuck pixel checker.">
-    <meta name="keywords" content="display doctor, monitor test, oled screen check, phone screen test, dead pixel test, ufo ghosting, backlight bleed, refresh rate 144hz 240hz, pwm flicker">
-    <meta name="theme-color" content="#07070b">
+    <meta name="description" content="DisplayDoctor Pro - Professional Display Diagnostics, OLED & IPS Calibration, Ghosting Test, and Performance Benchmark Suite.">
+    <meta name="theme-color" content="#0a0c14">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>DisplayDoctor Pro // Ultimate Mobile & Desktop Display Diagnostics</title>
+    <title>DisplayDoctor Pro // Display Diagnostics & Calibration</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Unified Responsive Stylesheet -->
+    <!-- Unified Stylesheet with Light/Dark Themes -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- Safety / Photosensitivity Warning Modal -->
+    <!-- Safety / Photosensitivity Advisory Modal -->
     <div id="warningModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="warningTitle">
         <div class="modal-card warning-card">
             <div class="warning-icon" aria-hidden="true">⚡</div>
             <h1 id="warningTitle">PHOTOSENSITIVITY & STRESS ADVISORY</h1>
             <p>
-                <strong>DisplayDoctor Pro contains rapid strobe, high-frequency chromatic flash, and extreme visual stress test patterns.</strong>
+                <strong>DisplayDoctor Pro contains rapid strobe, high-frequency chromatic flash, and visual stress patterns.</strong>
             </p>
             <p class="warning-sub">
-                These patterns may trigger seizures in individuals with photosensitive epilepsy or visual fatigue. Discontinue immediately if you experience dizziness or disorientation.
+                These patterns may trigger discomfort or seizures in photosensitive individuals. Discontinue use immediately if you experience dizziness, nausea, or visual fatigue.
             </p>
             <div class="warning-actions">
                 <label class="checkbox-container">
-                    <input type="checkbox" id="dontShowWarning">
+                    <input type="checkbox" id="enterFullscreenWarningCheck">
                     <span class="checkmark"></span>
-                    Remember choice (don't show again on this device)
+                    <strong>Enter Fullscreen & Remember Choice</strong>
                 </label>
-                <button id="acceptWarningBtn" class="btn-cta">I Understand & Launch Diagnostics</button>
+                <button id="acceptWarningBtn" class="btn-cta">I Understand & Open Studio</button>
             </div>
         </div>
     </div>
 
-    <!-- Diagnostic Canvas Viewport -->
+    <!-- Diagnostic Canvas Viewport (Background / Fullscreen Mode) -->
     <canvas id="displayCanvas" aria-label="Display Diagnostic Canvas"></canvas>
 
-    <!-- Mobile Toast Notification Overlay -->
-    <div id="mobileToast" class="mobile-toast" style="display: none;"></div>
+    <!-- Notification Toast Overlay -->
+    <div id="mobileToast" class="notification-toast" style="display: none;"></div>
 
-    <!-- Stuck Pixel Reviver Box (Targeted Exerciser Overlay) -->
-    <div id="pixelReviver" class="pixel-reviver-box" style="display: none;" title="Drag or touch to position over stuck pixel">
+    <!-- Targeted Stuck Pixel Reviver Box -->
+    <div id="pixelReviver" class="pixel-reviver-box" style="display: none;" title="Drag to position directly over stuck pixel">
         <div class="reviver-handle">REVIVER</div>
     </div>
 
-    <!-- Floating Top Navigation & Status Bar (Desktop & Tablet) -->
-    <header class="top-nav" id="topNav">
-        <div class="brand-badge">
-            <span class="status-pulse" id="globalStatusDot"></span>
-            <span class="brand-title">DISPLAYDOCTOR <span class="pro-tag">PRO v4.0</span></span>
-        </div>
-
-        <nav class="nav-filters" id="categoryNav">
-            <button class="nav-tab active" data-filter="all">All</button>
-            <button class="nav-tab" data-filter="oled">OLED Suite</button>
-            <button class="nav-tab" data-filter="ips">IPS & Motion</button>
-            <button class="nav-tab" data-filter="mobile">Phone Tests</button>
-            <button class="nav-tab" data-filter="color">Color & Gamma</button>
-            <button class="nav-tab" data-filter="stress">Stress</button>
-        </nav>
-
-        <div class="quick-tools">
-            <button id="btnOverview" class="btn-action" title="About & Guide">
-                <span class="icon">ℹ️</span> <span class="btn-text">Guide</span>
-            </button>
-            <button id="btnWizard" class="btn-action pulse-highlight" title="Start Guided Test Wizard">
-                <span class="icon">✨</span> <span class="btn-text">Guided Wizard</span>
-            </button>
-            <button id="btnOpenReport" class="btn-action" title="View Diagnostic Report">
-                <span class="icon">📊</span> <span class="btn-text">Report</span>
-            </button>
-            <button id="btnToggleMute" class="btn-action icon-only" title="Toggle Sound (M)">
-                <span id="muteIcon">🔊</span>
-            </button>
-            <button id="btnToggleDpr" class="btn-action icon-only" title="Toggle Native HiDPI 1:1 Pixel Mapping">
-                <span id="dprLabel">1:1</span>
-            </button>
-            <button id="btnToggleStats" class="btn-action icon-only" title="Toggle Telemetry Panel (S)">
-                <span>📈</span>
-            </button>
-            <button id="btnToggleFullscreen" class="btn-action icon-only" title="Toggle Fullscreen (F)">
-                <span>⛶</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- Welcome & Quick-Start Drawer (Inspired by DisplayDoctor/home.html) -->
-    <div id="overviewModal" class="modal-overlay" style="display: none;">
-        <div class="modal-card overview-card">
-            <div class="overview-header">
-                <div class="overview-title-group">
-                    <span class="pro-tag">DISPLAY CALIBRATION & HEALTH</span>
-                    <h2>DisplayDoctor Pro Diagnostics</h2>
-                    <p class="overview-subtitle">Industry-standard display evaluation engineered for phones, tablets, laptops, and ultra-high refresh gaming monitors.</p>
-                </div>
-                <button id="closeOverviewBtn" class="close-mini-btn" aria-label="Close">&times;</button>
-            </div>
-
-            <div class="overview-grid">
-                <div class="overview-card-tile" data-launch="oled">
-                    <div class="tile-icon">📱</div>
-                    <h3>OLED Specialist Suite</h3>
-                    <p>True 0-nit black test, 1%–5% near-black vertical banding, ABL power limiter, and notch/status bar burn-in detection.</p>
-                    <button class="tile-btn btn-subtle" onclick="App.start('oled-black'); App.hideOverview();">Launch OLED Test</button>
-                </div>
-
-                <div class="overview-card-tile" data-launch="ips">
-                    <div class="tile-icon">🎮</div>
-                    <h3>IPS & Gaming Pursuit</h3>
-                    <p>BlurBusters-style UFO ghosting at 120–1440 px/s, overdrive overshoot check, and IPS glow vs backlight bleed locator.</p>
-                    <button class="tile-btn btn-subtle" onclick="App.start('ufo-motion'); App.hideOverview();">Launch Ghosting Test</button>
-                </div>
-
-                <div class="overview-card-tile" data-launch="wizard">
-                    <div class="tile-icon">✨</div>
-                    <h3>2-Minute Guided Wizard</h3>
-                    <p>Automated step-by-step diagnostic workflow with pass/fail evaluation, scoring, and printable health certificate.</p>
-                    <button class="tile-btn btn-primary" onclick="App.startWizard(); App.hideOverview();">Start 2-Min Wizard</button>
-                </div>
-
-                <div class="overview-card-tile" data-launch="reviver">
-                    <div class="tile-icon">🩺</div>
-                    <h3>Stuck Pixel Reviver</h3>
-                    <p>Roving 60Hz high-frequency chromatic pulse box to exercise and unstick dormant subpixels on mobile or desktop.</p>
-                    <button class="tile-btn btn-subtle" onclick="App.start('pixel-reviver'); App.hideOverview();">Open Pixel Reviver</button>
+    <!-- =====================================================================
+         MAIN DASHBOARD VIEW (Visible when not actively running a test)
+         ===================================================================== -->
+    <div id="dashboardView" class="dashboard-wrapper">
+        
+        <!-- Header / Navigation Bar -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="brand-badge">
+                    <span class="status-pulse" id="globalStatusDot"></span>
+                    <span class="brand-title">DISPLAYDOCTOR <span class="pro-tag">PRO v4.0</span></span>
                 </div>
             </div>
 
-            <div class="mobile-tips-banner">
-                <span class="tip-icon">💡</span>
-                <div class="tip-text">
-                    <strong>Touch Gestures Enabled:</strong> Swipe left/right on screen to cycle tests. Double-tap to hide/show controls. Drag pixel reviver directly with your finger.
+            <!-- Category Filter Pills -->
+            <nav class="nav-filters" id="categoryNav">
+                <button class="nav-tab active" data-filter="all">All Tests</button>
+                <button class="nav-tab" data-filter="oled">OLED</button>
+                <button class="nav-tab" data-filter="ips">IPS / Gaming</button>
+                <button class="nav-tab" data-filter="mobile">Phone & Touch</button>
+                <button class="nav-tab" data-filter="color">Color & Gamma</button>
+                <button class="nav-tab" data-filter="stress">Stress</button>
+            </nav>
+
+            <!-- Header Tool Actions -->
+            <div class="header-tools">
+                <button id="btnToggleTheme" class="btn-tool" title="Toggle Light / Dark Theme">
+                    <span id="themeIcon">☀️</span> <span class="tool-text" id="themeLabel">Light</span>
+                </button>
+                <button id="btnWizard" class="btn-tool btn-highlight" title="Start 2-Minute Guided Diagnostic">
+                    <span>✨</span> <span class="tool-text">Guided Wizard</span>
+                </button>
+                <button id="btnOpenReport" class="btn-tool" title="View Diagnostic Health Report">
+                    <span>📊</span> <span class="tool-text">Report</span>
+                </button>
+                <button id="btnToggleMute" class="btn-tool icon-only" title="Toggle Sound (M)">
+                    <span id="muteIcon">🔊</span>
+                </button>
+                <button id="btnToggleDpr" class="btn-tool icon-only" title="Toggle Native HiDPI 1:1 Pixel Mapping">
+                    <span id="dprLabel">1:1</span>
+                </button>
+                <button id="btnToggleStats" class="btn-tool icon-only" title="Toggle Telemetry Panel (S)">
+                    <span>📈</span>
+                </button>
+                <button id="btnToggleFullscreen" class="btn-tool icon-only" title="Toggle Fullscreen (F)">
+                    <span>⛶</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Hardware & Display Specs Banner -->
+        <section class="specs-banner">
+            <div class="spec-capsule">
+                <span class="spec-label">MONITOR REFRESH</span>
+                <span class="spec-value highlight-cyan" id="bannerRefresh">Detecting...</span>
+            </div>
+            <div class="spec-capsule">
+                <span class="spec-label">REPORTED RESOLUTION</span>
+                <span class="spec-value" id="bannerRes">--</span>
+            </div>
+            <div class="spec-capsule">
+                <span class="spec-label">PIXEL RATIO (DPR)</span>
+                <span class="spec-value" id="bannerDpr">--</span>
+            </div>
+            <div class="spec-capsule">
+                <span class="spec-label">COLOR DEPTH</span>
+                <span class="spec-value" id="bannerDepth">--</span>
+            </div>
+            <div class="spec-options">
+                <label class="toggle-checkbox" title="Automatically request fullscreen when any test is launched">
+                    <input type="checkbox" id="autoFullscreenCheck" checked>
+                    <span class="toggle-label">Auto Fullscreen</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- Main Test Catalog Grid -->
+        <main class="catalog-container">
+            
+            <!-- OLED Category -->
+            <div class="category-block" data-cat="oled">
+                <div class="block-title">
+                    <span class="cat-badge oled-badge">OLED SPECIALIST</span>
+                    <h2>Pixel & Uniformity Diagnostics</h2>
+                </div>
+                <div class="cards-grid">
+                    
+                    <div class="test-card" data-mode="oled-black">
+                        <div class="card-top">
+                            <span class="card-icon">⬛</span>
+                            <span class="card-shortcut">1</span>
+                        </div>
+                        <h3>0-Nit True Black</h3>
+                        <p>Verify complete individual pixel shutoff and check for display controller glow.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="near-black">
+                        <div class="card-top">
+                            <span class="card-icon">🌫️</span>
+                            <span class="card-shortcut">2</span>
+                        </div>
+                        <h3>Near-Black Banding</h3>
+                        <p>1% to 20% IRE gray steps to expose vertical panel banding, shadow noise, and mura.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="burnin">
+                        <div class="card-top">
+                            <span class="card-icon">🎨</span>
+                            <span class="card-shortcut">3</span>
+                        </div>
+                        <h3>Burn-In & Dead Pixel Field</h3>
+                        <p>Pure Red, Green, Blue, White screens to check for dead subpixels and ghosted logos.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="pixel-reviver">
+                        <div class="card-top">
+                            <span class="card-icon">🩺</span>
+                            <span class="card-shortcut">4</span>
+                        </div>
+                        <h3>Stuck Pixel Reviver</h3>
+                        <p>Roving 60Hz color cycling box to exercise and unstick frozen liquid crystal subpixels.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="subpixel">
+                        <div class="card-top">
+                            <span class="card-icon">🔬</span>
+                            <span class="card-shortcut">5</span>
+                        </div>
+                        <h3>Subpixel & Text Fringing</h3>
+                        <p>Check ClearType text alignment and color fringing on QD-OLED & WOLED panels.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="abl">
+                        <div class="card-top">
+                            <span class="card-icon">💡</span>
+                            <span class="card-shortcut">6</span>
+                        </div>
+                        <h3>ABL Window Dimming</h3>
+                        <p>Test Auto Brightness Limiter dimming behavior from 1% to 100% white window areas.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
                 </div>
             </div>
-        </div>
+
+            <!-- IPS & Gaming Category -->
+            <div class="category-block" data-cat="ips">
+                <div class="block-title">
+                    <span class="cat-badge ips-badge">IPS & GAMING</span>
+                    <h2>Response Time & Motion Pursuit</h2>
+                </div>
+                <div class="cards-grid">
+                    
+                    <div class="test-card highlight-border" data-mode="ufo-motion">
+                        <div class="card-top">
+                            <span class="card-icon">🛸</span>
+                            <span class="card-shortcut">7</span>
+                        </div>
+                        <h3>UFO Motion Pursuit</h3>
+                        <p>BlurBusters-style motion pursuit test at 120–1440 px/s to check ghosting and overdrive halos.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="backlight-bleed">
+                        <div class="card-top">
+                            <span class="card-icon">🔦</span>
+                            <span class="card-shortcut">8</span>
+                        </div>
+                        <h3>Backlight Bleed & Glow</h3>
+                        <p>Dark room corner inspection targets to isolate physical bezel bleed from IPS glow.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="viewing-angle">
+                        <div class="card-top">
+                            <span class="card-icon">📐</span>
+                            <span class="card-shortcut">9</span>
+                        </div>
+                        <h3>Viewing Angle Shift</h3>
+                        <p>Multi-quadrant color blocks to check off-axis gamma, contrast, and hue shifting.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="sharpness">
+                        <div class="card-top">
+                            <span class="card-icon">🎯</span>
+                            <span class="card-shortcut">0</span>
+                        </div>
+                        <h3>1:1 Sharpness & Moire</h3>
+                        <p>Single-pixel checkerboard and concentric lines to check scaling distortion and chroma subsampling.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Phone & Touch Category -->
+            <div class="category-block" data-cat="mobile">
+                <div class="block-title">
+                    <span class="cat-badge mobile-badge">PHONE & TOUCH</span>
+                    <h2>Mobile Display Checks</h2>
+                </div>
+                <div class="cards-grid">
+                    
+                    <div class="test-card" data-mode="phone-burnin">
+                        <div class="card-top">
+                            <span class="card-icon">📱</span>
+                        </div>
+                        <h3>Status Bar & Notch Burn-In</h3>
+                        <p>Simulated Dynamic Island, notch, and status bar boundary to check for permanent icon burn-in.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="pwm-flicker">
+                        <div class="card-top">
+                            <span class="card-icon">〰️</span>
+                        </div>
+                        <h3>PWM Eye Strain Flicker</h3>
+                        <p>High-contrast moving vertical bars to visualize display pulse-width modulation dimming.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="touch-grid">
+                        <div class="card-top">
+                            <span class="card-icon">👆</span>
+                        </div>
+                        <h3>Touch Digitizer Grid</h3>
+                        <p>Drag your finger or mouse across the 60-box grid to detect dead touch zones or digitizer faults.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Color & Calibration Category -->
+            <div class="category-block" data-cat="color">
+                <div class="block-title">
+                    <span class="cat-badge cal-badge">CALIBRATION</span>
+                    <h2>Gamma & Dynamic Range</h2>
+                </div>
+                <div class="cards-grid">
+                    
+                    <div class="test-card" data-mode="grayscale">
+                        <div class="card-top">
+                            <span class="card-icon">📶</span>
+                        </div>
+                        <h3>32-Step Grayscale Ramp</h3>
+                        <p>Calibrate monitor luminance graduation smoothly from 0% all the way to 100%.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="gamma">
+                        <div class="card-top">
+                            <span class="card-icon">📈</span>
+                        </div>
+                        <h3>Gamma 2.2 Continuous Ramp</h3>
+                        <p>Verify smooth contrast curve across the entire dynamic range.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="black-clipping">
+                        <div class="card-top">
+                            <span class="card-icon">🌑</span>
+                        </div>
+                        <h3>Black-Level Shadow Clipping</h3>
+                        <p>Calibrate brightness so shadow detail levels 1–3 are faintly visible and not crushed to black.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="white-clipping">
+                        <div class="card-top">
+                            <span class="card-icon">☀️</span>
+                        </div>
+                        <h3>White-Level Highlight Clipping</h3>
+                        <p>Calibrate contrast so highlight detail levels 252–254 do not blow out to solid white.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="color-banding">
+                        <div class="card-top">
+                            <span class="card-icon">🌈</span>
+                        </div>
+                        <h3>Gradient Bit-Depth (Banding)</h3>
+                        <p>16-bit simulated gradients to reveal 6-bit+FRC vs true 8-bit / 10-bit color stepping.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Visual Stress Category -->
+            <div class="category-block" data-cat="stress">
+                <div class="block-title">
+                    <span class="cat-badge stress-badge">VISUAL STRESS</span>
+                    <h2>High-FPS Performance Benchmarks</h2>
+                </div>
+                <div class="cards-grid">
+                    
+                    <div class="test-card" data-mode="tv-static">
+                        <div class="card-top">
+                            <span class="card-icon">📺</span>
+                        </div>
+                        <h3>Fast TV Static</h3>
+                        <p>Bitwise XorShift32 PRNG static noise running at maximum refresh rate (240Hz+ ready).</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="rgb-noise">
+                        <div class="card-top">
+                            <span class="card-icon">✨</span>
+                        </div>
+                        <h3>RGB Chromatic Noise</h3>
+                        <p>High-throughput 32-bit color noise stream for GPU & display link testing.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="particles">
+                        <div class="card-top">
+                            <span class="card-icon">🌌</span>
+                        </div>
+                        <h3>Particle Physics Storm</h3>
+                        <p>Pooled kinetic physics particle storm with collision bounce and spectrum shifts.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="matrix-rain">
+                        <div class="card-top">
+                            <span class="card-icon">🟩</span>
+                        </div>
+                        <h3>Matrix Digital Rain</h3>
+                        <p>Digital phosphor glyph cascades with variable density and intensity control.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="strobe">
+                        <div class="card-top">
+                            <span class="card-icon">⚡</span>
+                        </div>
+                        <h3>High-Contrast Strobe</h3>
+                        <p>High frequency black/white strobe with automatic 15-second safety timer.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                    <div class="test-card" data-mode="autocycle">
+                        <div class="card-top">
+                            <span class="card-icon">🔥</span>
+                        </div>
+                        <h3>Auto Cycle Stress</h3>
+                        <p>Clean sequential rotation through visual stress benchmarks with zero frame leak.</p>
+                        <button class="btn-launch">Launch Test →</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <!-- Real-time Hardware & Performance Telemetry HUD (Desktop & Mobile Drawer) -->
-    <aside id="statsPanel" class="stats-panel visible" aria-label="Hardware & Performance Metrics">
+    <!-- =====================================================================
+         FOCUSED TEST RUNNER CONTROLS BAR (Active only during test execution)
+         ===================================================================== -->
+    <div id="testRunnerBar" class="test-runner-bar" style="display: none;">
+        
+        <!-- Left: Return to Dashboard -->
+        <button id="btnExitTest" class="btn-exit" title="Exit Test & Return to Dashboard (ESC)">
+            <span>← Dashboard (ESC)</span>
+        </button>
+
+        <!-- Center: Current Test Info & Interactive Toolbars -->
+        <div class="runner-center">
+            <div class="runner-title-badge">
+                <span class="runner-dot"></span>
+                <span id="runnerTestName">TEST RUNNING</span>
+            </div>
+
+            <!-- Dynamic Interactive Controls -->
+            <div id="interactiveControlsWrap" class="runner-interactive-controls">
+                
+                <!-- Near Black IRE -->
+                <div id="nearBlackControls" class="runner-control-group" style="display: none;">
+                    <span class="group-label">IRE:</span>
+                    <div class="seg-group">
+                        <button class="seg-btn active" data-ire="0">0%</button>
+                        <button class="seg-btn" data-ire="1">1%</button>
+                        <button class="seg-btn" data-ire="2">2%</button>
+                        <button class="seg-btn" data-ire="3">3%</button>
+                        <button class="seg-btn" data-ire="5">5%</button>
+                        <button class="seg-btn" data-ire="10">10%</button>
+                        <button class="seg-btn" data-ire="20">20%</button>
+                    </div>
+                </div>
+
+                <!-- UFO Pursuit Speed -->
+                <div id="motionControls" class="runner-control-group" style="display: none;">
+                    <span class="group-label">SPEED:</span>
+                    <div class="seg-group">
+                        <button class="seg-btn" data-speed="120">120</button>
+                        <button class="seg-btn" data-speed="240">240</button>
+                        <button class="seg-btn active" data-speed="480">480</button>
+                        <button class="seg-btn" data-speed="960">960</button>
+                        <button class="seg-btn" data-speed="1440">1440</button>
+                    </div>
+                </div>
+
+                <!-- ABL Window Area -->
+                <div id="ablControls" class="runner-control-group" style="display: none;">
+                    <span class="group-label">APL:</span>
+                    <div class="seg-group">
+                        <button class="seg-btn" data-apl="1">1%</button>
+                        <button class="seg-btn" data-apl="5">5%</button>
+                        <button class="seg-btn active" data-apl="10">10%</button>
+                        <button class="seg-btn" data-apl="25">25%</button>
+                        <button class="seg-btn" data-apl="50">50%</button>
+                        <button class="seg-btn" data-apl="100">100%</button>
+                    </div>
+                </div>
+
+                <!-- Subpixel Pattern -->
+                <div id="subpixelControls" class="runner-control-group" style="display: none;">
+                    <span class="group-label">PATTERN:</span>
+                    <div class="seg-group">
+                        <button class="seg-btn active" data-sub="text">Text Fringing</button>
+                        <button class="seg-btn" data-sub="stripes">RGB Stripes</button>
+                        <button class="seg-btn" data-sub="bgr">BGR Stripes</button>
+                        <button class="seg-btn" data-sub="grid">Checkerboard</button>
+                    </div>
+                </div>
+
+                <!-- Phone Burnin Overlay -->
+                <div id="phoneControls" class="runner-control-group" style="display: none;">
+                    <span class="group-label">OVERLAY:</span>
+                    <div class="seg-group">
+                        <button class="seg-btn active" data-phone-overlay="notch">Notch / Island</button>
+                        <button class="seg-btn" data-phone-overlay="statusbar">Status Icons</button>
+                        <button class="seg-btn" data-phone-overlay="homebar">Home Bar</button>
+                    </div>
+                </div>
+
+                <!-- Reviver Controls -->
+                <div id="reviverControls" class="runner-control-group" style="display: none;">
+                    <span class="group-label">SIZE:</span>
+                    <div class="seg-group">
+                        <button class="seg-btn" data-reviver-size="30">30px</button>
+                        <button class="seg-btn active" data-reviver-size="60">60px</button>
+                        <button class="seg-btn" data-reviver-size="120">120px</button>
+                        <button class="seg-btn" data-reviver-mode="fullscreen">Fullscreen</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right: Actions & Navigation -->
+        <div class="runner-right">
+            <div class="safety-indicator" id="safetyBadge" style="display: none;">
+                <span>⏱</span> <span id="safetyTimerText">15s</span>
+            </div>
+            <button id="btnPrevTest" class="runner-btn icon-only" title="Previous Test">
+                <span>◀</span>
+            </button>
+            <button id="btnPauseTest" class="runner-btn icon-only" title="Pause / Resume (Space)">
+                <span id="pauseIcon">⏸</span>
+            </button>
+            <button id="btnNextTest" class="runner-btn icon-only" title="Next Test">
+                <span>▶</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Floating Trigger to Reveal Controls when Runner Bar is Auto-Hidden -->
+    <button id="btnRevealControls" class="btn-reveal-controls" style="display: none;" title="Show Controls">
+        <span>▲ CONTROLS</span>
+    </button>
+
+    <!-- =====================================================================
+         TELEMETRY & HARDWARE PANEL (Toggleable via 'S' or button)
+         ===================================================================== -->
+    <aside id="statsPanel" class="stats-panel" aria-label="Hardware & Performance Metrics" style="display: none;">
         <div class="panel-header">
-            <span>TELEMETRY & HARDWARE</span>
+            <span>PERFORMANCE & SPECS</span>
             <button id="closeStatsBtn" class="close-mini-btn" title="Close Panel">&times;</button>
         </div>
         
@@ -179,7 +568,7 @@
                 <span class="spec-v highlight-cyan" id="specRefresh">Detecting...</span>
             </div>
             <div class="spec-row">
-                <span class="spec-k">RENDER RES</span>
+                <span class="spec-k">CANVAS RES</span>
                 <span class="spec-v" id="specRes">--</span>
             </div>
             <div class="spec-row">
@@ -197,7 +586,9 @@
         </div>
     </aside>
 
-    <!-- Guided Diagnostic Wizard Banner (Visible during Wizard Mode) -->
+    <!-- =====================================================================
+         GUIDED WIZARD BANNER (Active during Wizard Mode)
+         ===================================================================== -->
     <div id="wizardBanner" class="wizard-banner" style="display: none;">
         <div class="wizard-progress-bar">
             <div id="wizardProgressFill" class="wizard-fill"></div>
@@ -212,299 +603,14 @@
                 <button id="wizNoIssuesBtn" class="btn-success">✓ Pass (No Issues)</button>
                 <button id="wizHasIssueBtn" class="btn-danger">✗ Issue Detected</button>
                 <button id="wizSkipBtn" class="btn-subtle">Skip →</button>
-                <button id="wizExitBtn" class="btn-subtle">Exit</button>
+                <button id="wizExitBtn" class="btn-subtle">Exit Wizard</button>
             </div>
         </div>
     </div>
 
-    <!-- Mode Specific Interactive Controls Overlay -->
-    <div id="interactiveToolbar" class="interactive-toolbar" style="display: none;">
-        <div id="nearBlackControls" class="toolbar-group" style="display: none;">
-            <span class="toolbar-label">IRE GRAY:</span>
-            <div class="btn-segment">
-                <button class="btn-seg active" data-ire="0">0%</button>
-                <button class="btn-seg" data-ire="1">1%</button>
-                <button class="btn-seg" data-ire="2">2%</button>
-                <button class="btn-seg" data-ire="3">3%</button>
-                <button class="btn-seg" data-ire="5">5%</button>
-                <button class="btn-seg" data-ire="10">10%</button>
-                <button class="btn-seg" data-ire="20">20%</button>
-            </div>
-        </div>
-
-        <div id="motionControls" class="toolbar-group" style="display: none;">
-            <span class="toolbar-label">UFO SPEED:</span>
-            <div class="btn-segment">
-                <button class="btn-seg" data-speed="120">120</button>
-                <button class="btn-seg" data-speed="240">240</button>
-                <button class="btn-seg active" data-speed="480">480</button>
-                <button class="btn-seg" data-speed="960">960</button>
-                <button class="btn-seg" data-speed="1440">1440</button>
-            </div>
-        </div>
-
-        <div id="ablControls" class="toolbar-group" style="display: none;">
-            <span class="toolbar-label">WINDOW APL:</span>
-            <div class="btn-segment">
-                <button class="btn-seg" data-apl="1">1%</button>
-                <button class="btn-seg" data-apl="5">5%</button>
-                <button class="btn-seg active" data-apl="10">10%</button>
-                <button class="btn-seg" data-apl="25">25%</button>
-                <button class="btn-seg" data-apl="50">50%</button>
-                <button class="btn-seg" data-apl="100">100%</button>
-            </div>
-        </div>
-
-        <div id="subpixelControls" class="toolbar-group" style="display: none;">
-            <span class="toolbar-label">PATTERN:</span>
-            <div class="btn-segment">
-                <button class="btn-seg active" data-sub="text">Text Fringing</button>
-                <button class="btn-seg" data-sub="stripes">RGB Stripes</button>
-                <button class="btn-seg" data-sub="bgr">BGR Stripes</button>
-                <button class="btn-seg" data-sub="grid">Checkerboard</button>
-            </div>
-        </div>
-
-        <div id="reviverControls" class="toolbar-group" style="display: none;">
-            <span class="toolbar-label">REVIVER SIZE:</span>
-            <div class="btn-segment">
-                <button class="btn-seg" data-reviver-size="30">30px</button>
-                <button class="btn-seg active" data-reviver-size="60">60px</button>
-                <button class="btn-seg" data-reviver-size="120">120px</button>
-                <button class="btn-seg" data-reviver-mode="fullscreen">Fullscreen</button>
-            </div>
-        </div>
-
-        <div id="phoneControls" class="toolbar-group" style="display: none;">
-            <span class="toolbar-label">OVERLAY:</span>
-            <div class="btn-segment">
-                <button class="btn-seg active" data-phone-overlay="notch">Notch & Dynamic Island</button>
-                <button class="btn-seg" data-phone-overlay="statusbar">Status Bar Icons</button>
-                <button class="btn-seg" data-phone-overlay="homebar">Home Indicator</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom HUD Controls Panel (Responsive for Desktop & Mobile) -->
-    <main class="hud-container" id="hudContainer">
-        <div class="hud-glass">
-            
-            <!-- Sliders & Intensity Control Row -->
-            <div class="control-row">
-                <div class="slider-group">
-                    <label for="intensitySlider" class="control-label">INTENSITY</label>
-                    <div class="range-wrap">
-                        <input type="range" id="intensitySlider" min="1" max="10" value="5" step="1">
-                        <span class="range-badge" id="intensityBadge">5</span>
-                    </div>
-                </div>
-
-                <div class="safety-indicator" id="safetyBadge" style="display: none;">
-                    <span class="safety-icon">⏱</span>
-                    <span id="safetyTimerText">Auto-stop: 15s</span>
-                </div>
-            </div>
-
-            <!-- Categorized Test Grid -->
-            <div class="test-sections" id="testSections">
-                
-                <!-- OLED Section -->
-                <div class="test-category" data-cat="oled">
-                    <div class="category-header">
-                        <span class="cat-tag oled-tag">OLED SPECIALIST</span>
-                        <span class="cat-title">Pixel & Uniformity Diagnostics</span>
-                    </div>
-                    <div class="test-buttons">
-                        <button class="btn-test" data-mode="oled-black" title="0-nit True Black. Mouse/touch wakes subtle indicator.">
-                            <span class="test-name">True Black (0-Nit)</span>
-                            <span class="shortcut">1</span>
-                        </button>
-                        <button class="btn-test" data-mode="near-black" title="1% to 10% IRE steps to spot near-black vertical banding and mura.">
-                            <span class="test-name">Near-Black Banding</span>
-                            <span class="shortcut">2</span>
-                        </button>
-                        <button class="btn-test" data-mode="burnin" title="Fullscreen Red, Green, Blue, White to spot ghosted logos and burn-in.">
-                            <span class="test-name">Burn-In Check</span>
-                            <span class="shortcut">3</span>
-                        </button>
-                        <button class="btn-test" data-mode="pixel-reviver" title="Roving high-frequency color alternator to exercise stuck pixels.">
-                            <span class="test-name">Stuck Pixel Reviver</span>
-                            <span class="shortcut">4</span>
-                        </button>
-                        <button class="btn-test" data-mode="subpixel" title="Evaluates text clarity and color fringing on QD-OLED & WOLED panels.">
-                            <span class="test-name">Subpixel & Text</span>
-                            <span class="shortcut">5</span>
-                        </button>
-                        <button class="btn-test" data-mode="abl" title="Variable window sizes on black to test Auto Brightness Limiter dimming.">
-                            <span class="test-name">ABL Window Test</span>
-                            <span class="shortcut">6</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Mobile / Phone Specialists -->
-                <div class="test-category" data-cat="mobile">
-                    <div class="category-header">
-                        <span class="cat-tag mobile-tag">PHONE & TABLET</span>
-                        <span class="cat-title">Mobile OLED & Burn-In</span>
-                    </div>
-                    <div class="test-buttons">
-                        <button class="btn-test" data-mode="phone-burnin" title="Inspect status bar battery/wifi and home indicator burn-in on phone screens.">
-                            <span class="test-name">Status Bar & Notch Burn-In</span>
-                        </button>
-                        <button class="btn-test" data-mode="pwm-flicker" title="High-frequency contrast stripe test to inspect display PWM flicker & eye strain.">
-                            <span class="test-name">PWM Eye Strain Flicker</span>
-                        </button>
-                        <button class="btn-test" data-mode="touch-grid" title="Multi-touch responsiveness and grid uniformity check.">
-                            <span class="test-name">Touch & Uniformity Grid</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- IPS & Motion Section -->
-                <div class="test-category" data-cat="ips">
-                    <div class="category-header">
-                        <span class="cat-tag ips-tag">IPS & GAMING</span>
-                        <span class="cat-title">Response Time & Panel Bleed</span>
-                    </div>
-                    <div class="test-buttons">
-                        <button class="btn-test" data-mode="ufo-motion" title="Blurbusters-style motion pursuit test for ghosting & overdrive overshoot.">
-                            <span class="test-name">UFO Motion Ghosting</span>
-                            <span class="shortcut">7</span>
-                        </button>
-                        <button class="btn-test" data-mode="backlight-bleed" title="Inspect IPS glow and corner bezel pressure backlight bleed.">
-                            <span class="test-name">Backlight Bleed</span>
-                            <span class="shortcut">8</span>
-                        </button>
-                        <button class="btn-test" data-mode="viewing-angle" title="Multi-quadrant color blocks to check color shifting off-axis.">
-                            <span class="test-name">Viewing Angle</span>
-                            <span class="shortcut">9</span>
-                        </button>
-                        <button class="btn-test" data-mode="sharpness" title="Single-pixel checkerboard and concentric lines for scaling distortion.">
-                            <span class="test-name">1:1 Sharpness Grid</span>
-                            <span class="shortcut">0</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Color & Calibration Section -->
-                <div class="test-category" data-cat="color">
-                    <div class="category-header">
-                        <span class="cat-tag cal-tag">CALIBRATION</span>
-                        <span class="cat-title">Gamma & Dynamic Range</span>
-                    </div>
-                    <div class="test-buttons">
-                        <button class="btn-test" data-mode="grayscale" title="32-step precise luminance ramp from 0% to 100%.">
-                            <span class="test-name">Grayscale Steps</span>
-                        </button>
-                        <button class="btn-test" data-mode="gamma" title="Gamma 2.2 target curve and contrast verification.">
-                            <span class="test-name">Gamma 2.2 Ramp</span>
-                        </button>
-                        <button class="btn-test" data-mode="black-clipping" title="Shadow detail check: Ensure levels 1-25 are distinguishable from level 0.">
-                            <span class="test-name">Black-Level Clipping</span>
-                        </button>
-                        <button class="btn-test" data-mode="white-clipping" title="Highlight detail check: Ensure levels 230-254 do not blow out to 255.">
-                            <span class="test-name">White-Level Clipping</span>
-                        </button>
-                        <button class="btn-test" data-mode="color-banding" title="16-bit simulated smooth gradients to identify 6-bit/8-bit banding.">
-                            <span class="test-name">Gradient Bit-Depth</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Visual Stress Section -->
-                <div class="test-category" data-cat="stress">
-                    <div class="category-header">
-                        <span class="cat-tag stress-tag">STRESS & NOISE</span>
-                        <span class="cat-title">High-FPS Hardware Load Engine</span>
-                    </div>
-                    <div class="test-buttons">
-                        <button class="btn-test" data-mode="tv-static" title="Hardware accelerated bitwise XorShift32 retro TV static.">
-                            <span class="test-name">TV Static (Fast)</span>
-                        </button>
-                        <button class="btn-test" data-mode="rgb-noise" title="High-throughput RGB color noise stream.">
-                            <span class="test-name">RGB Noise</span>
-                        </button>
-                        <button class="btn-test" data-mode="particles" title="High-density pooled kinetic particle physics storm.">
-                            <span class="test-name">Particle Storm</span>
-                        </button>
-                        <button class="btn-test" data-mode="matrix-rain" title="Digital phosphor matrix glyph rain.">
-                            <span class="test-name">Matrix Rain</span>
-                        </button>
-                        <button class="btn-test" data-mode="gradient-storm" title="Multi-axis rotating spectral gradient sweeps.">
-                            <span class="test-name">Gradient Storm</span>
-                        </button>
-                        <button class="btn-test" data-mode="rainbow" title="High saturation chaotic rainbow box generator.">
-                            <span class="test-name">Rainbow Chaos</span>
-                        </button>
-                        <button class="btn-test" data-mode="strobe" title="High contrast full-frequency strobe (15s auto-stop).">
-                            <span class="test-name">⚡ Strobe</span>
-                        </button>
-                        <button class="btn-test" data-mode="color-flash" title="Rapid chromatic full-field flashing (15s auto-stop).">
-                            <span class="test-name">🌈 Color Flash</span>
-                        </button>
-                        <button class="btn-test btn-autocycle" data-mode="autocycle" title="Cycle through visual stress tests with clean frame transitions.">
-                            <span class="test-name">🔥 Auto Cycle</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- HUD Bottom Action Bar -->
-            <div class="hud-actions">
-                <button id="btnStop" class="btn-danger" title="Stop Current Test & Standby (ESC)">
-                    <span>⏹ STOP (ESC)</span>
-                </button>
-                <button id="btnToggleHud" class="btn-subtle" title="Hide/Show Controls (H)">
-                    <span id="hudToggleIcon">▼</span> <span id="hudToggleText">Hide HUD (H)</span>
-                </button>
-                <div class="keyboard-legend">
-                    <span class="legend-key">Space</span> <span class="legend-desc">Pause</span>
-                    <span class="legend-key">F</span> <span class="legend-desc">Fullscreen</span>
-                    <span class="legend-key">H</span> <span class="legend-desc">HUD</span>
-                    <span class="legend-key">S</span> <span class="legend-desc">Stats</span>
-                    <span class="legend-key">ESC</span> <span class="legend-desc">Stop</span>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- Floating Toggle Pill (When HUD is minimized on Desktop or Mobile) -->
-    <button id="hudFloatingPill" class="hud-floating-pill" style="display: none;" title="Show Controls (H)">
-        <span>▲ SHOW CONTROLS (H)</span>
-    </button>
-
-    <!-- Mobile Bottom Navigation Bar (Visible only on mobile devices) -->
-    <nav class="mobile-bottom-bar" id="mobileBottomBar">
-        <button class="mob-nav-btn active" id="mobBtnWizard" title="Run 2-Minute Diagnostic Wizard">
-            <span class="mob-icon">✨</span>
-            <span class="mob-label">Wizard</span>
-        </button>
-        <button class="mob-nav-btn" id="mobBtnOled" title="OLED Diagnostics">
-            <span class="mob-icon">📱</span>
-            <span class="mob-label">OLED</span>
-        </button>
-        <button class="mob-nav-btn" id="mobBtnMotion" title="UFO Motion & Ghosting">
-            <span class="mob-icon">🛸</span>
-            <span class="mob-label">Motion</span>
-        </button>
-        <button class="mob-nav-btn" id="mobBtnReviver" title="Stuck Pixel Fixer">
-            <span class="mob-icon">🩺</span>
-            <span class="mob-label">Reviver</span>
-        </button>
-        <button class="mob-nav-btn" id="mobBtnReport" title="Health Report">
-            <span class="mob-icon">📊</span>
-            <span class="mob-label">Report</span>
-        </button>
-        <button class="mob-nav-btn" id="mobBtnMenu" title="Toggle Full Menu">
-            <span class="mob-icon">☰</span>
-            <span class="mob-label">Tests</span>
-        </button>
-    </nav>
-
-    <!-- Diagnostic Report Modal Dialog -->
+    <!-- =====================================================================
+         CERTIFIED DIAGNOSTIC REPORT MODAL
+         ===================================================================== -->
     <div id="reportModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reportTitle" style="display: none;">
         <div class="modal-card report-card">
             

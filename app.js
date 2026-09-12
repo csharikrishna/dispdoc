@@ -101,14 +101,23 @@ const Telemetry = {
         const dpr = window.devicePixelRatio || 1;
         const width = window.innerWidth;
         const height = window.innerHeight;
+        const resText = `${Math.round(width * dpr)}×${Math.round(height * dpr)}`;
+        const dprText = `${dpr.toFixed(2)}x`;
+        const depthText = `${screen.colorDepth || 24}-bit`;
 
         const specRes = document.getElementById('specRes');
         const specDpr = document.getElementById('specDpr');
         const specDepth = document.getElementById('specDepth');
+        if (specRes) specRes.textContent = resText;
+        if (specDpr) specDpr.textContent = dprText;
+        if (specDepth) specDepth.textContent = depthText;
 
-        if (specRes) specRes.textContent = `${Math.round(width * dpr)}×${Math.round(height * dpr)}`;
-        if (specDpr) specDpr.textContent = `${dpr.toFixed(2)}x`;
-        if (specDepth) specDepth.textContent = `${screen.colorDepth || 24}-bit`;
+        const bannerRes = document.getElementById('bannerRes');
+        const bannerDpr = document.getElementById('bannerDpr');
+        const bannerDepth = document.getElementById('bannerDepth');
+        if (bannerRes) bannerRes.textContent = resText;
+        if (bannerDpr) bannerDpr.textContent = dprText;
+        if (bannerDepth) bannerDepth.textContent = depthText;
     },
 
     update(now) {
@@ -138,6 +147,8 @@ const Telemetry = {
                 this.targetFrameTime = 1000 / this.refreshRate;
                 const refreshEl = document.getElementById('specRefresh');
                 if (refreshEl) refreshEl.textContent = `${this.refreshRate} Hz`;
+                const bannerRefresh = document.getElementById('bannerRefresh');
+                if (bannerRefresh) bannerRefresh.textContent = `${this.refreshRate} Hz`;
             }
         }
 
@@ -195,6 +206,45 @@ class FastRNG {
 }
 
 // ==========================================================================
+// 3.5 THEME MANAGER (DARK / LIGHT DUAL-THEME)
+// ==========================================================================
+const ThemeEngine = {
+    current: 'dark',
+
+    init() {
+        const saved = localStorage.getItem('dispdoc_theme');
+        if (saved === 'light' || saved === 'dark') {
+            this.current = saved;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            this.current = 'light';
+        } else {
+            this.current = 'dark';
+        }
+        this.apply();
+    },
+
+    toggle() {
+        this.current = this.current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('dispdoc_theme', this.current);
+        this.apply();
+        AudioEngine.playClick();
+    },
+
+    apply() {
+        document.documentElement.setAttribute('data-theme', this.current);
+        const icon = document.getElementById('themeIcon');
+        const label = document.getElementById('themeLabel');
+        if (this.current === 'light') {
+            if (icon) icon.textContent = '🌙';
+            if (label) label.textContent = 'Dark';
+        } else {
+            if (icon) icon.textContent = '☀️';
+            if (label) label.textContent = 'Light';
+        }
+    }
+};
+
+// ==========================================================================
 // 4. MAIN APPLICATION CORE
 // ==========================================================================
 const App = {
@@ -210,7 +260,6 @@ const App = {
     isRunning: false,
     isPaused: false,
 
-    intensity: 5,
     motionSpeed: 480, // px/s for UFO test
     ireLevel: 0,      // 0-20% for near-black
     aplLevel: 10,     // 1-100% for ABL
@@ -227,9 +276,46 @@ const App = {
 
     idleTimer: null,
     toastTimer: null,
-    isHudVisible: true,
-    isStatsVisible: true,
+    isStatsVisible: false,
     rng: new FastRNG(Date.now()),
+
+    testModesList: [
+        'oled-black', 'near-black', 'burnin', 'pixel-reviver', 'subpixel', 'abl',
+        'ufo-motion', 'backlight-bleed', 'viewing-angle', 'sharpness',
+        'phone-burnin', 'pwm-flicker', 'touch-grid',
+        'grayscale', 'gamma', 'black-clipping', 'white-clipping', 'color-banding',
+        'tv-static', 'rgb-noise', 'particles', 'matrix-rain', 'strobe', 'autocycle'
+    ],
+
+    testNames: {
+        'oled-black': '0-Nit True Black (OLED)',
+        'near-black': 'Near-Black Banding',
+        'burnin': 'Burn-In & Dead Pixel Field',
+        'pixel-reviver': 'Stuck Pixel Reviver',
+        'subpixel': 'Subpixel & Text Fringing',
+        'abl': 'ABL Window Dimming',
+        'ufo-motion': 'UFO Motion Pursuit Ghosting',
+        'backlight-bleed': 'Backlight Bleed & Uniformity',
+        'viewing-angle': 'Viewing Angle & Gamma Shift',
+        'sharpness': '1:1 Pixel Sharpness Grid',
+        'phone-burnin': 'Status Bar & Notch Burn-In',
+        'pwm-flicker': 'PWM Eye Strain Flicker',
+        'touch-grid': 'Touch & Uniformity Grid',
+        'grayscale': '32-Step Grayscale Ramp',
+        'gamma': 'Gamma 2.2 Calibration Ramp',
+        'black-clipping': 'Black-Level Shadow Clipping',
+        'white-clipping': 'White-Level Highlight Clipping',
+        'color-banding': 'Color Gradient Bit-Depth',
+        'tv-static': 'TV Static (High Stress)',
+        'rgb-noise': 'RGB Noise Stress',
+        'particles': 'Particle Storm Benchmark',
+        'matrix-rain': 'Matrix Rain High-FPS',
+        'gradient-storm': 'Gradient Storm',
+        'rainbow': 'Rainbow Chaos Benchmark',
+        'strobe': 'High-Frequency Strobe',
+        'color-flash': 'Rapid Color Flash',
+        'autocycle': 'Auto-Cycle Stress Benchmark'
+    },
 
     // Touch gesture state
     touchStartX: 0,
@@ -255,6 +341,7 @@ const App = {
         });
 
         AudioEngine.init();
+        ThemeEngine.init();
         Telemetry.init();
 
         this.setupEventListeners();
@@ -279,15 +366,23 @@ const App = {
     acceptWarning() {
         AudioEngine.init();
         AudioEngine.playClick();
-        const dontShow = document.getElementById('dontShowWarning').checked;
-        if (dontShow) {
+        const warningCheck = document.getElementById('enterFullscreenWarningCheck');
+        if (warningCheck && warningCheck.checked) {
+            localStorage.setItem('dispdoc_warning_accepted', 'true');
+            localStorage.setItem('dispdoc_autofullscreen', 'true');
+            const autoCheck = document.getElementById('autoFullscreenCheck');
+            if (autoCheck) autoCheck.checked = true;
+            this.requestFullscreen();
+        } else {
             localStorage.setItem('dispdoc_warning_accepted', 'true');
         }
         const modal = document.getElementById('warningModal');
-        modal.style.transition = 'opacity 0.3s ease';
-        modal.style.opacity = '0';
-        setTimeout(() => modal.style.display = 'none', 300);
-        this.showToast('Diagnostics Ready // Swipe or Tap to Test');
+        if (modal) {
+            modal.style.transition = 'opacity 0.25s ease';
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.style.display = 'none'; }, 250);
+        }
+        this.showToast('Diagnostics Ready // Select Any Test');
     },
 
     showToast(message, duration = 2200) {
@@ -359,25 +454,42 @@ const App = {
                 const deltaY = endY - this.touchStartY;
                 const deltaTime = performance.now() - this.touchStartTime;
 
-                // 1. Double tap detection
-                const now = performance.now();
-                if (now - this.lastTapTime < 320 && Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
-                    this.toggleHud();
-                    this.lastTapTime = 0;
-                    return;
-                }
-                this.lastTapTime = now;
-
-                // 2. Horizontal swipe detection (> 50px)
+                // 1. Horizontal swipe detection (> 50px)
                 if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5 && deltaTime < 400) {
                     if (deltaX < 0) {
                         this.navigateTest(1); // Swipe Left -> Next
                     } else {
                         this.navigateTest(-1); // Swipe Right -> Prev
                     }
+                    return;
+                }
+
+                // 2. Tap detection: if burnin test, cycle color, otherwise toggle runner controls
+                if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15 && deltaTime < 300) {
+                    if (this.currentMode === 'burnin') {
+                        this.burnInIndex = (this.burnInIndex + 1) % this.burnInColors.length;
+                        this.drawBurnIn();
+                    } else if (this.isRunning) {
+                        const runnerBar = document.getElementById('testRunnerBar');
+                        if (runnerBar && runnerBar.classList.contains('runner-hidden')) {
+                            this.revealControls();
+                        } else {
+                            this.handleUserActivity();
+                        }
+                    }
                 }
             }
         }, touchOptions);
+
+        // Click detection for desktop
+        this.canvas.addEventListener('click', () => {
+            if (this.currentMode === 'burnin') {
+                this.burnInIndex = (this.burnInIndex + 1) % this.burnInColors.length;
+                this.drawBurnIn();
+            } else if (this.isRunning) {
+                this.revealControls();
+            }
+        });
 
         // Touch grid digitizer check (Touch & Mouse support)
         this.canvas.addEventListener('touchmove', (e) => {
@@ -418,41 +530,68 @@ const App = {
             setTimeout(() => {
                 this.resizeCanvas();
                 const isLandscape = window.innerWidth > window.innerHeight;
-                this.showToast(isLandscape ? 'Landscape Mode: Fullscreen view active' : 'Portrait Mode active');
+                this.showToast(isLandscape ? 'Landscape: Immersive View Active' : 'Portrait Mode Active');
             }, 250);
         });
     },
 
     navigateTest(direction) {
-        const modes = Array.from(document.querySelectorAll('.btn-test')).map(b => b.getAttribute('data-mode'));
-        const currentIndex = modes.indexOf(this.currentMode);
+        const currentIndex = this.testModesList.indexOf(this.currentMode);
+        let nextIndex;
         if (currentIndex === -1) {
-            this.start(modes[0]);
-            return;
+            nextIndex = 0;
+        } else {
+            nextIndex = (currentIndex + direction + this.testModesList.length) % this.testModesList.length;
         }
-
-        let nextIndex = (currentIndex + direction + modes.length) % modes.length;
-        const nextMode = modes[nextIndex];
+        const nextMode = this.testModesList[nextIndex];
         AudioEngine.playClick();
         this.start(nextMode);
-        this.showToast(`Switched: ${nextMode.toUpperCase()}`);
+        this.showToast(`Switched: ${this.testNames[nextMode] || nextMode.toUpperCase()}`);
     },
 
     // ======================================================================
     // EVENT LISTENERS & CONTROLS
     // ======================================================================
     setupEventListeners() {
-        // Warning Accept
-        document.getElementById('acceptWarningBtn').addEventListener('click', () => this.acceptWarning());
+        // 1. Warning Modal Controls
+        const acceptBtn = document.getElementById('acceptWarningBtn');
+        if (acceptBtn) acceptBtn.addEventListener('click', () => this.acceptWarning());
 
-        // Overview Modal
-        document.getElementById('btnOverview').addEventListener('click', () => this.showOverview());
-        document.getElementById('closeOverviewBtn').addEventListener('click', () => this.hideOverview());
+        const warningCheck = document.getElementById('enterFullscreenWarningCheck');
+        if (warningCheck) {
+            warningCheck.addEventListener('change', () => {
+                if (warningCheck.checked) {
+                    this.requestFullscreen();
+                    localStorage.setItem('dispdoc_autofullscreen', 'true');
+                    const autoCheck = document.getElementById('autoFullscreenCheck');
+                    if (autoCheck) autoCheck.checked = true;
+                }
+            });
+        }
 
-        // Navigation Category Tabs (Desktop)
-        document.querySelectorAll('.nav-tab').forEach(tab => {
+        // 2. Dashboard Header Tools
+        const themeBtn = document.getElementById('btnToggleTheme');
+        if (themeBtn) themeBtn.addEventListener('click', () => ThemeEngine.toggle());
+
+        const muteBtn = document.getElementById('btnToggleMute');
+        if (muteBtn) muteBtn.addEventListener('click', () => AudioEngine.toggleMute());
+
+        const dprBtn = document.getElementById('btnToggleDpr');
+        if (dprBtn) dprBtn.addEventListener('click', () => this.toggleHiDpi());
+
+        const statsBtn = document.getElementById('btnToggleStats');
+        if (statsBtn) statsBtn.addEventListener('click', () => this.toggleStats());
+
+        const closeStatsBtn = document.getElementById('closeStatsBtn');
+        if (closeStatsBtn) closeStatsBtn.addEventListener('click', () => this.toggleStats(false));
+
+        const fsBtn = document.getElementById('btnToggleFullscreen');
+        if (fsBtn) fsBtn.addEventListener('click', () => this.toggleFullscreen());
+
+        // 3. Category Filter Tabs
+        document.querySelectorAll('#categoryNav .nav-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('#categoryNav .nav-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 const filter = tab.getAttribute('data-filter');
                 this.filterCategories(filter);
@@ -460,108 +599,87 @@ const App = {
             });
         });
 
-        // Mobile Bottom Navigation Bar
-        document.getElementById('mobBtnWizard').addEventListener('click', () => {
-            this.setMobileTabActive('mobBtnWizard');
-            this.startWizard();
-        });
-        document.getElementById('mobBtnOled').addEventListener('click', () => {
-            this.setMobileTabActive('mobBtnOled');
-            this.start('oled-black');
-            this.filterCategories('oled');
-        });
-        document.getElementById('mobBtnMotion').addEventListener('click', () => {
-            this.setMobileTabActive('mobBtnMotion');
-            this.start('ufo-motion');
-            this.filterCategories('ips');
-        });
-        document.getElementById('mobBtnReviver').addEventListener('click', () => {
-            this.setMobileTabActive('mobBtnReviver');
-            this.start('pixel-reviver');
-        });
-        document.getElementById('mobBtnReport').addEventListener('click', () => {
-            this.setMobileTabActive('mobBtnReport');
-            this.showReport();
-        });
-        document.getElementById('mobBtnMenu').addEventListener('click', () => {
-            this.toggleHud();
-        });
-
-        // Test Buttons in HUD
-        document.querySelectorAll('.btn-test').forEach(btn => {
-            btn.addEventListener('mouseenter', () => AudioEngine.playHover());
-            btn.addEventListener('click', () => {
-                const mode = btn.getAttribute('data-mode');
+        // 4. Auto-Fullscreen Checkbox in Specs Banner
+        const autoCheck = document.getElementById('autoFullscreenCheck');
+        if (autoCheck) {
+            const saved = localStorage.getItem('dispdoc_autofullscreen');
+            if (saved !== null) {
+                autoCheck.checked = saved === 'true';
+            }
+            autoCheck.addEventListener('change', () => {
+                localStorage.setItem('dispdoc_autofullscreen', autoCheck.checked);
+                if (autoCheck.checked) {
+                    this.requestFullscreen();
+                }
                 AudioEngine.playClick();
-                this.start(mode);
+            });
+        }
+
+        // 5. Test Card Clicks (Launch Test)
+        document.querySelectorAll('.test-card').forEach(card => {
+            card.addEventListener('mouseenter', () => AudioEngine.playHover());
+            card.addEventListener('click', () => {
+                const mode = card.getAttribute('data-mode');
+                if (mode) {
+                    AudioEngine.playClick();
+                    this.start(mode);
+                }
             });
         });
 
-        // Top Nav Quick Tools
-        document.getElementById('btnToggleMute').addEventListener('click', () => AudioEngine.toggleMute());
-        document.getElementById('btnToggleDpr').addEventListener('click', () => this.toggleHiDpi());
-        document.getElementById('btnToggleStats').addEventListener('click', () => this.toggleStats());
-        document.getElementById('closeStatsBtn').addEventListener('click', () => this.toggleStats(false));
-        document.getElementById('btnToggleFullscreen').addEventListener('click', () => this.toggleFullscreen());
-        document.getElementById('btnToggleHud').addEventListener('click', () => this.toggleHud());
-        document.getElementById('hudFloatingPill').addEventListener('click', () => this.toggleHud(true));
-        document.getElementById('btnStop').addEventListener('click', () => this.stop());
+        // 6. Test Runner Dock Buttons
+        const exitBtn = document.getElementById('btnExitTest');
+        if (exitBtn) exitBtn.addEventListener('click', () => this.stop());
 
-        // Report & Wizard Buttons
-        document.getElementById('btnWizard').addEventListener('click', () => this.startWizard());
-        document.getElementById('btnOpenReport').addEventListener('click', () => this.showReport());
-        document.getElementById('btnCloseReport').addEventListener('click', () => this.hideReport());
-        document.getElementById('btnPrintReport').addEventListener('click', () => window.print());
-        document.getElementById('btnExportJson').addEventListener('click', () => this.exportJsonReport());
+        const prevBtn = document.getElementById('btnPrevTest');
+        if (prevBtn) prevBtn.addEventListener('click', () => this.navigateTest(-1));
 
-        // Wizard Response Buttons
-        document.getElementById('wizNoIssuesBtn').addEventListener('click', () => this.handleWizardAnswer(true));
-        document.getElementById('wizHasIssueBtn').addEventListener('click', () => this.handleWizardAnswer(false));
-        document.getElementById('wizSkipBtn').addEventListener('click', () => this.handleWizardSkip());
-        document.getElementById('wizExitBtn').addEventListener('click', () => this.exitWizard());
+        const nextBtn = document.getElementById('btnNextTest');
+        if (nextBtn) nextBtn.addEventListener('click', () => this.navigateTest(1));
 
-        // Intensity Slider
-        const slider = document.getElementById('intensitySlider');
-        const badge = document.getElementById('intensityBadge');
-        slider.addEventListener('input', (e) => {
-            this.intensity = parseInt(e.target.value);
-            if (badge) badge.textContent = this.intensity;
-            if (this.currentMode === 'particles') this.initParticles();
-        });
+        const pauseBtn = document.getElementById('btnPauseTest');
+        if (pauseBtn) pauseBtn.addEventListener('click', () => this.togglePause());
 
-        // Mode Toolbar Segments
-        document.querySelectorAll('#nearBlackControls .btn-seg').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#nearBlackControls .btn-seg').forEach(b => b.classList.remove('active'));
+        const revealBtn = document.getElementById('btnRevealControls');
+        if (revealBtn) revealBtn.addEventListener('click', () => this.revealControls());
+
+        // 7. Interactive Runner Segment Groups
+        document.querySelectorAll('#nearBlackControls .seg-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('#nearBlackControls .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                this.ireLevel = parseInt(btn.getAttribute('data-ire'));
+                this.ireLevel = parseInt(btn.getAttribute('data-ire'), 10);
                 AudioEngine.playClick();
                 this.drawNearBlack();
             });
         });
 
-        document.querySelectorAll('#motionControls .btn-seg').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#motionControls .btn-seg').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#motionControls .seg-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('#motionControls .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                this.motionSpeed = parseInt(btn.getAttribute('data-speed'));
+                this.motionSpeed = parseInt(btn.getAttribute('data-speed'), 10);
                 AudioEngine.playClick();
             });
         });
 
-        document.querySelectorAll('#ablControls .btn-seg').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#ablControls .btn-seg').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#ablControls .seg-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('#ablControls .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                this.aplLevel = parseInt(btn.getAttribute('data-apl'));
+                this.aplLevel = parseInt(btn.getAttribute('data-apl'), 10);
                 AudioEngine.playClick();
                 this.drawAblWindow();
             });
         });
 
-        document.querySelectorAll('#subpixelControls .btn-seg').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#subpixelControls .btn-seg').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#subpixelControls .seg-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('#subpixelControls .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.subpixelType = btn.getAttribute('data-sub');
                 AudioEngine.playClick();
@@ -569,9 +687,10 @@ const App = {
             });
         });
 
-        document.querySelectorAll('#phoneControls .btn-seg').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#phoneControls .btn-seg').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#phoneControls .seg-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('#phoneControls .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.phoneOverlay = btn.getAttribute('data-phone-overlay');
                 AudioEngine.playClick();
@@ -579,16 +698,17 @@ const App = {
             });
         });
 
-        document.querySelectorAll('#reviverControls .btn-seg').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#reviverControls .btn-seg').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#reviverControls .seg-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('#reviverControls .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 if (btn.getAttribute('data-reviver-mode') === 'fullscreen') {
                     this.reviverFullscreen = true;
                     document.getElementById('pixelReviver').style.display = 'none';
                 } else {
                     this.reviverFullscreen = false;
-                    this.reviverSize = parseInt(btn.getAttribute('data-reviver-size'));
+                    this.reviverSize = parseInt(btn.getAttribute('data-reviver-size'), 10);
                     const rev = document.getElementById('pixelReviver');
                     rev.style.display = 'flex';
                     rev.style.width = `${this.reviverSize}px`;
@@ -598,20 +718,31 @@ const App = {
             });
         });
 
-        // Window resize
+        // 8. Guided Wizard & Report
+        document.getElementById('btnWizard').addEventListener('click', () => this.startWizard());
+        document.getElementById('btnOpenReport').addEventListener('click', () => this.showReport());
+        document.getElementById('btnCloseReport').addEventListener('click', () => this.hideReport());
+        document.getElementById('btnPrintReport').addEventListener('click', () => window.print());
+        document.getElementById('btnExportJson').addEventListener('click', () => this.exportJsonReport());
+
+        document.getElementById('wizNoIssuesBtn').addEventListener('click', () => this.handleWizardAnswer(true));
+        document.getElementById('wizHasIssueBtn').addEventListener('click', () => this.handleWizardAnswer(false));
+        document.getElementById('wizSkipBtn').addEventListener('click', () => this.handleWizardSkip());
+        document.getElementById('wizExitBtn').addEventListener('click', () => this.exitWizard());
+
+        // 9. Window Resize & DblClick Fullscreen
         window.addEventListener('resize', () => {
             clearTimeout(this.resizeTimeout);
             this.resizeTimeout = setTimeout(() => this.resizeCanvas(), 100);
         });
 
-        // Double click canvas to toggle fullscreen (Desktop)
         this.canvas.addEventListener('dblclick', () => this.toggleFullscreen());
 
-        // Mouse activity: reset auto-hide timer
+        // 10. User Activity & Keydown
         window.addEventListener('mousemove', () => this.handleUserActivity());
         window.addEventListener('keydown', (e) => this.handleKeyDown(e));
 
-        // Tab visibility change
+        // 11. Tab Visibility Change
         document.addEventListener('visibilitychange', () => {
             if (document.hidden && this.isRunning) {
                 this.isPaused = true;
@@ -621,44 +752,55 @@ const App = {
         });
     },
 
-    setMobileTabActive(id) {
-        document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById(id);
-        if (btn) btn.classList.add('active');
-    },
-
-    showOverview() {
-        const m = document.getElementById('overviewModal');
-        if (m) m.style.display = 'flex';
-        AudioEngine.playClick();
-    },
-
-    hideOverview() {
-        const m = document.getElementById('overviewModal');
-        if (m) m.style.display = 'none';
-        AudioEngine.playClick();
+    filterCategories(filter) {
+        document.querySelectorAll('.category-block').forEach(cat => {
+            if (filter === 'all' || cat.getAttribute('data-cat') === filter) {
+                cat.style.display = 'block';
+            } else {
+                cat.style.display = 'none';
+            }
+        });
     },
 
     handleUserActivity() {
         document.body.style.cursor = 'default';
-        clearTimeout(this.idleTimer);
-        this.idleTimer = setTimeout(() => {
-            if (this.isRunning && !this.isHudVisible) {
-                document.body.style.cursor = 'none';
+        const runnerBar = document.getElementById('testRunnerBar');
+        const revealBtn = document.getElementById('btnRevealControls');
+
+        if (this.isRunning) {
+            if (runnerBar && runnerBar.classList.contains('runner-hidden')) {
+                runnerBar.classList.remove('runner-hidden');
             }
-        }, 2500);
+            if (revealBtn) revealBtn.style.display = 'none';
+
+            clearTimeout(this.idleTimer);
+            this.idleTimer = setTimeout(() => {
+                if (this.isRunning) {
+                    if (runnerBar) runnerBar.classList.add('runner-hidden');
+                    if (revealBtn) revealBtn.style.display = 'block';
+                    document.body.style.cursor = 'none';
+                }
+            }, 3000);
+        }
+    },
+
+    revealControls() {
+        const runnerBar = document.getElementById('testRunnerBar');
+        const revealBtn = document.getElementById('btnRevealControls');
+        if (runnerBar) runnerBar.classList.remove('runner-hidden');
+        if (revealBtn) revealBtn.style.display = 'none';
+        document.body.style.cursor = 'default';
+        AudioEngine.playClick();
+        this.handleUserActivity();
     },
 
     handleKeyDown(e) {
         const warning = document.getElementById('warningModal');
         const report = document.getElementById('reportModal');
-        const overview = document.getElementById('overviewModal');
         if ((warning && warning.style.display !== 'none') || 
-            (report && report.style.display !== 'none') ||
-            (overview && overview.style.display !== 'none')) {
+            (report && report.style.display !== 'none')) {
             if (e.key === 'Escape') {
                 this.hideReport();
-                this.hideOverview();
             }
             return;
         }
@@ -667,23 +809,34 @@ const App = {
         switch (key) {
             case 'escape':
                 e.preventDefault();
-                this.stop();
+                if (this.wizardActive) {
+                    this.exitWizard();
+                } else {
+                    this.stop();
+                }
                 break;
             case ' ':
                 e.preventDefault();
-                this.togglePause();
+                if (this.isRunning) this.togglePause();
+                break;
+            case 'arrowleft':
+                e.preventDefault();
+                if (this.isRunning) this.navigateTest(-1);
+                break;
+            case 'arrowright':
+                e.preventDefault();
+                if (this.isRunning) this.navigateTest(1);
                 break;
             case 'f':
                 e.preventDefault();
                 this.toggleFullscreen();
                 break;
-            case 'h':
-                this.toggleHud();
-                break;
             case 's':
+                e.preventDefault();
                 this.toggleStats();
                 break;
             case 'm':
+                e.preventDefault();
                 AudioEngine.toggleMute();
                 break;
             case '1': this.start('oled-black'); break;
@@ -699,65 +852,49 @@ const App = {
         }
     },
 
-    filterCategories(filter) {
-        document.querySelectorAll('.test-category').forEach(cat => {
-            if (filter === 'all' || cat.getAttribute('data-cat') === filter) {
-                cat.style.display = 'flex';
-            } else {
-                cat.style.display = 'none';
-            }
-        });
-    },
-
-    toggleHud(forceShow = false) {
-        if (forceShow) this.isHudVisible = true;
-        else this.isHudVisible = !this.isHudVisible;
-
-        const hud = document.getElementById('hudContainer');
-        const pill = document.getElementById('hudFloatingPill');
-        const topNav = document.getElementById('topNav');
-        const toggleText = document.getElementById('hudToggleText');
-        const toggleIcon = document.getElementById('hudToggleIcon');
-
-        if (this.isHudVisible) {
-            hud.classList.remove('minimized');
-            topNav.classList.remove('hud-hidden');
-            pill.style.display = 'none';
-            if (toggleText) toggleText.textContent = 'Hide HUD (H)';
-            if (toggleIcon) toggleIcon.textContent = '▼';
-            document.body.style.cursor = 'default';
-        } else {
-            hud.classList.add('minimized');
-            topNav.classList.add('hud-hidden');
-            pill.style.display = 'block';
-            if (toggleText) toggleText.textContent = 'Show HUD (H)';
-            if (toggleIcon) toggleIcon.textContent = '▲';
-        }
-        AudioEngine.playClick();
-    },
-
     toggleStats(forceState) {
         this.isStatsVisible = forceState !== undefined ? forceState : !this.isStatsVisible;
         const panel = document.getElementById('statsPanel');
         if (panel) {
-            panel.classList.toggle('visible', this.isStatsVisible);
+            panel.style.display = this.isStatsVisible ? 'block' : 'none';
         }
         AudioEngine.playClick();
     },
 
-    toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => {});
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    requestFullscreen() {
+        try {
+            if (!document.fullscreenElement) {
+                const docEl = document.documentElement;
+                if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+                else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+                else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+            }
+        } catch (e) {
+            // Fullscreen might require direct user gesture on some browsers
         }
-        AudioEngine.playClick();
+    },
+
+    toggleFullscreen() {
+        try {
+            if (!document.fullscreenElement) {
+                this.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+            }
+            AudioEngine.playClick();
+        } catch (e) {
+            // Non-blocking
+        }
     },
 
     togglePause() {
         this.isPaused = !this.isPaused;
+        const icon = document.getElementById('pauseIcon');
+        if (icon) icon.textContent = this.isPaused ? '▶' : '⏸';
         AudioEngine.playTone(this.isPaused ? 300 : 600, 0.08, 'sine');
-        this.showToast(this.isPaused ? 'Paused (Space)' : 'Resumed');
+        this.showToast(this.isPaused ? 'Test Paused (Space)' : 'Test Resumed');
     },
 
     // Mouse & Touch Drag on Reviver Box
@@ -819,12 +956,36 @@ const App = {
         this.currentMode = mode;
         Telemetry.reset();
 
-        document.querySelectorAll('.btn-test').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-mode') === mode);
-        });
+        // Switch View Modes: Hide Dashboard Hub, Show Test Runner Bar
+        const dashboard = document.getElementById('dashboardView');
+        if (dashboard) dashboard.style.display = 'none';
+
+        const runnerBar = document.getElementById('testRunnerBar');
+        if (runnerBar) {
+            runnerBar.style.display = 'flex';
+            runnerBar.classList.remove('runner-hidden');
+        }
+
+        const revealBtn = document.getElementById('btnRevealControls');
+        if (revealBtn) revealBtn.style.display = 'none';
+
+        // Auto-Fullscreen if option is enabled
+        const autoCheck = document.getElementById('autoFullscreenCheck');
+        if (autoCheck && autoCheck.checked) {
+            this.requestFullscreen();
+        }
+
+        // Update Runner Test Name
+        const nameEl = document.getElementById('runnerTestName');
+        if (nameEl) {
+            nameEl.textContent = this.testNames[mode] || mode.toUpperCase();
+        }
 
         const specMode = document.getElementById('specMode');
         if (specMode) specMode.textContent = mode.toUpperCase();
+
+        const pauseIcon = document.getElementById('pauseIcon');
+        if (pauseIcon) pauseIcon.textContent = '⏸';
 
         const safetyBadge = document.getElementById('safetyBadge');
         if (safetyBadge) safetyBadge.style.display = 'none';
@@ -834,6 +995,8 @@ const App = {
         if (mode === 'strobe' || mode === 'color-flash') {
             this.startSafetyTimer(15);
         }
+
+        this.handleUserActivity();
 
         switch (mode) {
             // OLED Specialists
@@ -894,15 +1057,30 @@ const App = {
             clearTimeout(this.autoCycleTimeout);
             this.autoCycleTimeout = null;
         }
+        clearTimeout(this.idleTimer);
 
         document.getElementById('pixelReviver').style.display = 'none';
-        document.getElementById('interactiveToolbar').style.display = 'none';
-        document.getElementById('safetyBadge').style.display = 'none';
+        
+        // Restore Dashboard View
+        const dashboard = document.getElementById('dashboardView');
+        if (dashboard) dashboard.style.display = 'flex';
 
-        document.querySelectorAll('.btn-test').forEach(b => b.classList.remove('active'));
+        const runnerBar = document.getElementById('testRunnerBar');
+        if (runnerBar) {
+            runnerBar.style.display = 'none';
+            runnerBar.classList.remove('runner-hidden');
+        }
+
+        const revealBtn = document.getElementById('btnRevealControls');
+        if (revealBtn) revealBtn.style.display = 'none';
+
+        const safetyBadge = document.getElementById('safetyBadge');
+        if (safetyBadge) safetyBadge.style.display = 'none';
 
         const specMode = document.getElementById('specMode');
         if (specMode) specMode.textContent = 'STANDBY';
+
+        document.body.style.cursor = 'default';
 
         AudioEngine.playClick();
         this.renderStandby();
@@ -928,7 +1106,6 @@ const App = {
     },
 
     updateInteractiveToolbars(mode) {
-        const bar = document.getElementById('interactiveToolbar');
         const nearBlack = document.getElementById('nearBlackControls');
         const motion = document.getElementById('motionControls');
         const abl = document.getElementById('ablControls');
@@ -936,34 +1113,19 @@ const App = {
         const rev = document.getElementById('reviverControls');
         const phone = document.getElementById('phoneControls');
 
-        nearBlack.style.display = 'none';
-        motion.style.display = 'none';
-        abl.style.display = 'none';
-        sub.style.display = 'none';
-        rev.style.display = 'none';
-        phone.style.display = 'none';
+        if (nearBlack) nearBlack.style.display = 'none';
+        if (motion) motion.style.display = 'none';
+        if (abl) abl.style.display = 'none';
+        if (sub) sub.style.display = 'none';
+        if (rev) rev.style.display = 'none';
+        if (phone) phone.style.display = 'none';
 
-        if (mode === 'near-black') {
-            bar.style.display = 'flex';
-            nearBlack.style.display = 'flex';
-        } else if (mode === 'ufo-motion') {
-            bar.style.display = 'flex';
-            motion.style.display = 'flex';
-        } else if (mode === 'abl') {
-            bar.style.display = 'flex';
-            abl.style.display = 'flex';
-        } else if (mode === 'subpixel') {
-            bar.style.display = 'flex';
-            sub.style.display = 'flex';
-        } else if (mode === 'pixel-reviver') {
-            bar.style.display = 'flex';
-            rev.style.display = 'flex';
-        } else if (mode === 'phone-burnin') {
-            bar.style.display = 'flex';
-            phone.style.display = 'flex';
-        } else {
-            bar.style.display = 'none';
-        }
+        if (mode === 'near-black' && nearBlack) nearBlack.style.display = 'flex';
+        else if (mode === 'ufo-motion' && motion) motion.style.display = 'flex';
+        else if (mode === 'abl' && abl) abl.style.display = 'flex';
+        else if (mode === 'subpixel' && sub) sub.style.display = 'flex';
+        else if (mode === 'pixel-reviver' && rev) rev.style.display = 'flex';
+        else if (mode === 'phone-burnin' && phone) phone.style.display = 'flex';
     },
 
     loop(drawFn) {
@@ -1782,6 +1944,8 @@ const App = {
         this.wizardStep = 0;
         this.diagnosticFindings = {};
         document.getElementById('wizardBanner').style.display = 'block';
+        const runnerBar = document.getElementById('testRunnerBar');
+        if (runnerBar) runnerBar.style.display = 'none';
         AudioEngine.playSuccess();
         this.runWizardStep();
     },
@@ -1801,6 +1965,9 @@ const App = {
 
         if (step.mode === 'near-black') this.ireLevel = 5;
         this.start(step.mode);
+
+        const runnerBar = document.getElementById('testRunnerBar');
+        if (runnerBar) runnerBar.style.display = 'none';
     },
 
     handleWizardAnswer(passed) {
@@ -1830,6 +1997,7 @@ const App = {
         this.wizardActive = false;
         document.getElementById('wizardBanner').style.display = 'none';
         AudioEngine.playSuccess();
+        this.stop();
         this.showReport();
     },
 
