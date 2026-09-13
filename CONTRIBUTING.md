@@ -1,6 +1,6 @@
-# Contributing to DisplayDoctor Pro
+# Contributing to PanelProbe
 
-Thanks for helping improve DisplayDoctor Pro. This guide covers how to report
+Thanks for helping improve PanelProbe. This guide covers how to report
 problems, propose tests, and send pull requests.
 
 ## Reporting bugs

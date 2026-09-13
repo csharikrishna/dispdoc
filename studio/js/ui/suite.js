@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — "Test All": shows every suite test for a fixed time,
+ * PanelProbe — "Test All": shows every suite test for a fixed time,
  * with pause/resume, manual skip, and a progress line in the HUD.
  */
 (function (DD) {

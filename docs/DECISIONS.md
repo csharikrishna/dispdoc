@@ -1,4 +1,4 @@
-# Architectural & Design Decisions Log — DisplayDoctor Pro
+# Architectural & Design Decisions Log — PanelProbe
 
 Append-only log of non-obvious engineering decisions, rationale, and behavioral modifications.
 
@@ -78,3 +78,10 @@ Append-only log of non-obvious engineering decisions, rationale, and behavioral 
 - **Date**: 2026-09-13
 - **Context**: "Gamma 2.2 Calibration" was a plain linear gradient. The canvas backing store used `floor(innerWidth × dpr)`, which is not exactly 1:1 at fractional scaling.
 - **Decision**: The gamma test shows solid gray patches (value `255 × 0.5^(1/γ)`) against 1-pixel black/white line dither for γ 1.8–2.6. Canvas size comes from `ResizeObserver` `device-pixel-content-box` where available, falling back to rounding.
+
+---
+
+### Entry 011: Rename to PanelProbe
+- **Date**: 2026-09-13
+- **Context**: "Display Doctor" is already used by a screen-testing Android app (Google Play) and by the SciTech Display Doctor driver suite.
+- **Decision**: Rename the product to **PanelProbe**. Search, GitHub, and npm showed no conflicts. The GitHub repository, the Pages URL (`/dispdoc/`), and `localStorage` keys (`dispdoc_*`) are unchanged, so links and saved preferences keep working.

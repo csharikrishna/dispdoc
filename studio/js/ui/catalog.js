@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Test catalog: category tabs and test cards, generated
+ * PanelProbe — Test catalog: category tabs and test cards, generated
  * from the registry so labels and hotkeys can never drift from behavior.
  */
 (function (DD) {

@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Inline SVG icon set (Feather-style, 24×24 viewBox).
+ * PanelProbe — Inline SVG icon set (Feather-style, 24×24 viewBox).
  * Icons are returned as markup strings so they can be injected into buttons
  * and generated test cards without extra network requests.
  */

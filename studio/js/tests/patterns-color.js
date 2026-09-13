@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Color, gamma and dynamic range patterns.
+ * PanelProbe — Color, gamma and dynamic range patterns.
  */
 (function (DD) {
     'use strict';

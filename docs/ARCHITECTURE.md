@@ -1,6 +1,6 @@
 # Architecture
 
-DisplayDoctor Pro is a static site with no build step. Plain HTML, CSS, and
+PanelProbe is a static site with no build step. Plain HTML, CSS, and
 classic `<script>` files run directly in the browser. Serve it over HTTP
 (`npm start`) during development. Over `file://`, directory links such as
 `studio/` show a folder listing and web fonts are blocked.

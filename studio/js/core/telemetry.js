@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Frame timing telemetry and refresh-rate estimation.
+ * PanelProbe — Frame timing telemetry and refresh-rate estimation.
  *
  * The refresh rate is estimated from requestAnimationFrame intervals and
  * snapped to common panel rates. It reflects the rate the browser is

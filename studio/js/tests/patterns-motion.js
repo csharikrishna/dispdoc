@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Motion, IPS and mobile patterns.
+ * PanelProbe — Motion, IPS and mobile patterns.
  */
 (function (DD) {
     'use strict';

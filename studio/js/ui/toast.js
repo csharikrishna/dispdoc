@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Transient status toast (announced to screen readers).
+ * PanelProbe — Transient status toast (announced to screen readers).
  */
 (function (DD) {
     'use strict';

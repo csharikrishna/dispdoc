@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Fullscreen API wrapper.
+ * PanelProbe — Fullscreen API wrapper.
  *
  * Wraps vendor-prefixed APIs and adds a "full viewport" fallback for contexts
  * where native fullscreen is unavailable or denied (iOS Safari on iPhone,

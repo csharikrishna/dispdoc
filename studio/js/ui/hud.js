@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Floating test HUD.
+ * PanelProbe — Floating test HUD.
  *
  * Visibility model (the screen belongs to the test pattern):
  *   • Hidden by default when a test starts.

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   DisplayDoctor Pro — Studio Styles
+   PanelProbe — Studio Styles
    Requires assets/css/base.css (tokens, fonts, reset).
 
    Contents
@@ -144,21 +144,9 @@ body.is-fullscreen-fallback .dashboard-wrapper {
 .brand-title {
     display: flex;
     align-items: center;
-    gap: 6px;
     font-size: 15px;
     font-weight: 700;
     letter-spacing: -0.01em;
-}
-
-.pro-tag {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--accent-cyan);
-    background: var(--accent-cyan-soft);
-    border: 1px solid var(--border-highlight);
-    padding: 1px 6px;
-    border-radius: 4px;
 }
 
 .header-tools {

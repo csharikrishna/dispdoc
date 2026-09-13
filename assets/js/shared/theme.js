@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Light / dark theme controller (shared by all pages).
+ * PanelProbe — Light / dark theme controller (shared by all pages).
  *
  * Markup contract:
  *   <button data-theme-toggle>            toggles the theme on click

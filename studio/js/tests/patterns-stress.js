@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — GPU and panel stress patterns.
+ * PanelProbe — GPU and panel stress patterns.
  */
 (function (DD) {
     'use strict';

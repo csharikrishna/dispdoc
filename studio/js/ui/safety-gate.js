@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Photosensitivity advisory with a two-step fullscreen gate.
+ * PanelProbe — Photosensitivity advisory with a two-step fullscreen gate.
  *
  * Step 1 requests fullscreen. Step 2 ("Enter Studio") unlocks only after a real
  * fullscreenchange event confirms fullscreen is active — never on a rejected

@@ -1,6 +1,6 @@
 {
-  "name": "displaydoctor-pro",
-  "version": "4.2.0",
+  "name": "panelprobe",
+  "version": "4.3.0",
   "private": true,
   "description": "Browser-based display test patterns and calibration aids for OLED, IPS, and mobile screens.",
   "license": "MIT",

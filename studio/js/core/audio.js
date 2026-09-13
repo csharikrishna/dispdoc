@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — UI sound effects (Web Audio synthesis, no audio files).
+ * PanelProbe — UI sound effects (Web Audio synthesis, no audio files).
  * The AudioContext is created lazily on first use so browsers' autoplay
  * policies are respected.
  */

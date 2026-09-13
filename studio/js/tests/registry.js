@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Test registry (single source of truth).
+ * PanelProbe — Test registry (single source of truth).
  *
  * Everything user-facing about a test — its card, hotkey, category, order in
  * "Test All", and HUD controls — is derived from this list. To add a test:

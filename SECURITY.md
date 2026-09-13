@@ -1,6 +1,6 @@
 # Security Policy
 
-DisplayDoctor Pro is a static, client-side site. It has no server, no accounts,
+PanelProbe is a static, client-side site. It has no server, no accounts,
 and no data collection. Security issues are still possible (for example, script
 injection through a crafted URL, or a compromised dependency in the dev
 tooling).

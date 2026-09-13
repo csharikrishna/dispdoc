@@ -1,5 +1,5 @@
 /* ==========================================================================
-   DisplayDoctor Pro — Landing Page Styles
+   PanelProbe — Landing Page Styles
    Requires assets/css/base.css (tokens, fonts, reset).
    ========================================================================== */
 
@@ -55,22 +55,10 @@ body {
 .brand-title {
     display: flex;
     align-items: center;
-    gap: 6px;
     font-size: 16px;
     font-weight: 700;
     letter-spacing: -0.015em;
     white-space: nowrap;
-}
-
-.pro-badge {
-    padding: 1px 6px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--accent-cyan);
-    background: var(--accent-cyan-soft);
-    border: 1px solid var(--border-highlight);
-    border-radius: 4px;
 }
 
 .nav-links {
@@ -724,7 +712,6 @@ body {
         padding: 0 16px;
     }
 
-    .brand-title .pro-badge,
     .nav-actions a.btn-icon {
         display: none;
     }

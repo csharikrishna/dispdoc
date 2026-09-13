@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Studio application controller.
+ * PanelProbe — Studio application controller.
  *
  * Owns the canvas, the render loop and test lifecycle, and wires global input
  * (keyboard, pointer, header buttons) to the UI modules in studio/js/ui/.
@@ -173,7 +173,7 @@
         const test = DD.getTest(id);
         const pattern = DD.patterns[id];
         if (!test || !pattern) {
-            console.error(`[DisplayDoctor] Unknown test "${id}"`);
+            console.error(`[PanelProbe] Unknown test "${id}"`);
             return;
         }
 

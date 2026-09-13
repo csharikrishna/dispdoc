@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [4.3.0] — 2026-09-13
+
+### Changed
+- **Renamed to PanelProbe** (formerly DisplayDoctor Pro). The old name collided with an existing Android screen-testing app and SciTech Display Doctor. The URL and saved preferences are unchanged.
+
 ## [4.2.0] — 2026-09-13
 
 ### Changed

@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Pattern renderer contract and drawing helpers.
+ * PanelProbe — Pattern renderer contract and drawing helpers.
  *
  * A pattern is registered with DD.definePattern(id, spec):
  *

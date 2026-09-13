@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Guided wizard: walks through key tests and records
+ * PanelProbe — Guided wizard: walks through key tests and records
  * the user's pass / issue / skip answers for the report.
  */
 (function (DD) {

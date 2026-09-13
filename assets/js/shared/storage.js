@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Safe localStorage wrapper.
+ * PanelProbe — Safe localStorage wrapper.
  * Storage can throw (private mode, disabled cookies, sandboxed iframes);
  * every read/write here degrades to an in-memory no-op instead.
  */

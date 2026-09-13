@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Landing page bootstrap.
+ * PanelProbe — Landing page bootstrap.
  * Theme toggle and browser-reported display info; everything else is static.
  */
 (function (DD) {

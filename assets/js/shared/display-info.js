@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — Browser-reported display characteristics.
+ * PanelProbe — Browser-reported display characteristics.
  *
  * Browsers expose only coarse information: screen size in CSS pixels, the
  * device pixel ratio, colorDepth, and a few media queries. Everything here is

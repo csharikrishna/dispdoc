@@ -1,10 +1,10 @@
 <p align="center">
   <a href="https://csharikrishna.github.io/dispdoc/">
-    <img src="assets/logo.svg" width="88" height="88" alt="DisplayDoctor Pro logo">
+    <img src="assets/logo.svg" width="88" height="88" alt="PanelProbe logo">
   </a>
 </p>
 
-<h1 align="center">DisplayDoctor Pro</h1>
+<h1 align="center">PanelProbe</h1>
 
 <p align="center">
   Display test patterns and calibration aids for OLED, IPS, and mobile screens, running entirely in your browser.
@@ -29,7 +29,7 @@
 ## Why
 
 Test videos are compressed. Codecs smear near-black detail and add banding and
-blocking, which are exactly the artifacts you're trying to spot. DisplayDoctor
+blocking, which are exactly the artifacts you're trying to spot. PanelProbe
 draws every pattern losslessly to a canvas mapped 1:1 to your device pixels.
 There's nothing to install and nothing leaves your machine.
 
@@ -143,7 +143,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the pieces fit together
 
 Current versions of Chrome, Edge, Firefox, and Safari (desktop and mobile). iPhone Safari doesn't support the Fullscreen API for pages; the studio falls back to a full-viewport mode there.
 
-A browser can only report what the operating system exposes: resolution, scaling, a coarse color depth, and wide-gamut/HDR flags. DisplayDoctor labels these values as *reported*. The patterns are visual aids for your own judgment, not a substitute for a colorimeter.
+A browser can only report what the operating system exposes: resolution, scaling, a coarse color depth, and wide-gamut/HDR flags. PanelProbe labels these values as *reported*. The patterns are visual aids for your own judgment, not a substitute for a colorimeter.
 
 ## Contributing
 

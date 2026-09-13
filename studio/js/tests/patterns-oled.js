@@ -1,5 +1,5 @@
 /**
- * DisplayDoctor Pro — OLED & uniformity patterns.
+ * PanelProbe — OLED & uniformity patterns.
  */
 (function (DD) {
     'use strict';

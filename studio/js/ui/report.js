@@ -1,12 +1,12 @@
 /**
- * DisplayDoctor Pro — Self-assessment report: summarizes wizard answers and
+ * PanelProbe — Self-assessment report: summarizes wizard answers and
  * browser-reported display info, with print/PDF and JSON export.
  */
 (function (DD) {
     'use strict';
 
     const $ = (id) => document.getElementById(id);
-    const VERSION = '4.2.0';
+    const VERSION = '4.3.0';
     let modal = null;
     let lastFocus = null;
 
@@ -91,7 +91,7 @@
         const info = DD.DisplayInfo.read();
         const summary = summarize();
         const data = {
-            application: `DisplayDoctor Pro ${VERSION}`,
+            application: `PanelProbe ${VERSION}`,
             generatedAt: new Date().toISOString(),
             note: 'Results are self-reported observations; display values are as reported by the browser.',
             display: {
@@ -110,7 +110,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `displaydoctor-report-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `panelprobe-report-${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
