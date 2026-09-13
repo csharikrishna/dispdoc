@@ -81,6 +81,17 @@
 
     // 3. SEAMLESS FULLSCREEN STUDIO CONTROLLER
     const StudioTransition = {
+        getPaths() {
+            const p = window.location.pathname;
+            // Cleanly normalize base path to prevent any /studio/studio/ stacking
+            let base = p.replace(/\/index\.html$/i, '').replace(/\/studio(\/studio)*\/?$/i, '').replace(/\/+$/, '');
+            const root = base ? base + '/' : '/';
+            return {
+                root: root,
+                studio: root + 'studio/'
+            };
+        },
+
         init() {
             this.bindTriggers();
             this.handleNavigationState();
@@ -113,9 +124,9 @@
                 }
             }
 
-            // STEP 3: Update browser URL without document reload
+            // STEP 3: Update browser URL with canonical studio path
             try {
-                window.history.pushState({ view: 'studio' }, '', './studio/');
+                window.history.pushState({ view: 'studio' }, '', this.getPaths().studio);
             } catch (e) {}
 
             // STEP 4: Audio Chime & Warning Status Check
@@ -155,9 +166,9 @@
             if (studioView) studioView.style.display = 'none';
             if (landingView) landingView.style.display = 'block';
 
-            // Update browser URL
+            // Update browser URL with canonical root path
             try {
-                window.history.pushState({ view: 'landing' }, '', './');
+                window.history.pushState({ view: 'landing' }, '', this.getPaths().root);
             } catch (e) {}
 
             window.scrollTo(0, 0);

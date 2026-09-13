@@ -863,3 +863,60 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Accessibility (A11y), Focus-Visible, Reduced-Motion & Touch Ergonomics
+   -------------------------------------------------------------------------- */
+
+/* Universal Focus Rings */
+:focus-visible {
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 4px var(--accent-cyan-glow) !important;
+}
+
+.btn-primary-hero:focus-visible,
+.btn-secondary-hero:focus-visible,
+.btn-launch-nav:focus-visible,
+.btn-checklist-launch:focus-visible,
+.card-action-btn:focus-visible,
+.btn-icon:focus-visible {
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 12px var(--accent-cyan-glow) !important;
+}
+
+/* Vestibular Motion Sensitivity */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .capability-card:hover {
+        transform: none !important;
+    }
+    .status-dot, .live-dot {
+        animation: none !important;
+    }
+}
+
+/* Touch Ergonomics & Minimum 44x44px Hit Areas */
+@media (pointer: coarse), (max-width: 768px) {
+    .btn-icon {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .btn-launch-nav {
+        min-height: 44px;
+        padding: 10px 18px;
+    }
+    .btn-primary-hero, .btn-secondary-hero {
+        min-height: 48px;
+    }
+    .nav-link {
+        padding: 12px 10px;
+    }
+}
+

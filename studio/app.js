@@ -455,10 +455,19 @@ const App = {
 
     init() {
         this.canvas = document.getElementById('displayCanvas');
-        this.ctx = this.canvas.getContext('2d', {
-            alpha: false,
-            desynchronized: true
-        });
+        try {
+            this.ctx = this.canvas.getContext('2d', {
+                alpha: false,
+                desynchronized: true
+            }) || this.canvas.getContext('2d');
+        } catch (e) {
+            this.ctx = this.canvas.getContext('2d');
+        }
+
+        // Reduced motion check
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            this.motionSpeed = 120;
+        }
 
         AudioEngine.init();
         ThemeEngine.init();
@@ -770,8 +779,18 @@ const App = {
             });
         }
 
-        // 5. Test Card Clicks (Launch Test with Synchronous Fullscreen Trigger)
+        // 5. Test Card Clicks & Keyboard Navigation (Synchronous Fullscreen Trigger)
         document.querySelectorAll('.test-card').forEach(card => {
+            if (!card.hasAttribute('tabindex')) card.setAttribute('tabindex', '0');
+            if (!card.hasAttribute('role')) card.setAttribute('role', 'button');
+            const titleEl = card.querySelector('.card-title');
+            const shortcutEl = card.querySelector('.card-key-shortcut');
+            const cardName = titleEl ? titleEl.textContent.trim() : 'Diagnostic Test';
+            const shortcutKey = shortcutEl ? shortcutEl.textContent.trim() : '';
+            if (!card.hasAttribute('aria-label')) {
+                card.setAttribute('aria-label', `Launch ${cardName}${shortcutKey ? ' (Hotkey: ' + shortcutKey + ')' : ''}`);
+            }
+
             card.addEventListener('mouseenter', () => AudioEngine.playHover());
             card.addEventListener('click', () => {
                 const autoCheck = document.getElementById('autoFullscreenCheck');
@@ -782,6 +801,12 @@ const App = {
                 if (mode) {
                     AudioEngine.playClick();
                     this.start(mode);
+                }
+            });
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
                 }
             });
         });

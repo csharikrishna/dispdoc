@@ -1519,6 +1519,87 @@ html, body {
     }
 }
 
+/* --------------------------------------------------------------------------
+   Accessibility (A11y), Focus-Visible, Reduced-Motion & Touch Ergonomics
+   -------------------------------------------------------------------------- */
+
+/* Universal Focus Rings */
+:focus-visible {
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 4px var(--accent-cyan-glow) !important;
+}
+
+.test-card:focus-visible {
+    border-color: var(--accent-cyan) !important;
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 15px var(--accent-cyan-glow), var(--shadow-elevated) !important;
+    transform: translateY(-2px);
+}
+
+.btn-tool:focus-visible,
+.btn-primary-action:focus-visible,
+.btn-subtle:focus-visible,
+.nav-tab:focus-visible,
+.checkbox-container input:focus-visible + .checkmark {
+    outline: 2px solid var(--accent-cyan) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 10px var(--accent-cyan-glow) !important;
+}
+
+/* Vestibular Motion Sensitivity */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .test-card:hover, .test-card:focus-visible {
+        transform: none !important;
+    }
+    .status-dot, .live-pulse {
+        animation: none !important;
+    }
+}
+
+/* Touch Ergonomics & Min 44x44px Hit Areas */
+@media (pointer: coarse), (max-width: 768px) {
+    .btn-tool.icon-only {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px 12px;
+    }
+    .btn-tool {
+        min-height: 44px;
+    }
+    .nav-tab {
+        min-height: 44px;
+        padding: 10px 16px;
+    }
+    .btn-dock-icon {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .checkbox-container {
+        padding: 8px 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+}
+
+/* Touch-friendly Category Filter Scrollbar */
+.nav-filters {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.nav-filters::-webkit-scrollbar {
+    display: none;
+}
+
 /* Print Stylesheet */
 @media print {
     body { background: #ffffff !important; color: #000000 !important; }
