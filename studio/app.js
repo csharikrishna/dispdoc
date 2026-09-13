@@ -196,42 +196,40 @@ const Telemetry = {
 
     detectDisplaySpecs() {
         const dpr = window.devicePixelRatio || 1;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const resText = `${Math.round(width * dpr)}×${Math.round(height * dpr)}`;
-        const dprText = `${dpr.toFixed(2)}x`;
+        // True physical display resolution
+        const screenW = Math.round((window.screen.width || window.innerWidth) * dpr);
+        const screenH = Math.round((window.screen.height || window.innerHeight) * dpr);
+        const resText = `${screenW}×${screenH}`;
+        const dprText = `${dpr.toFixed(2)}x (${Math.round(dpr * 100)}%)`;
 
         // Format color depth to reflect actual bits-per-channel (8-bit, 10-bit, 12-bit)
         const rawDepth = screen.colorDepth || 24;
-        let bpc = 8;
-        if (rawDepth >= 36) bpc = 12;
-        else if (rawDepth >= 30) bpc = 10;
-        else if (rawDepth === 16 || rawDepth === 18) bpc = 6;
-        else bpc = 8;
+        let depthText = '8-bit SDR';
+        if (rawDepth >= 36) depthText = '12-bit Deep';
+        else if (rawDepth >= 30) depthText = '10-bit HDR';
+        else if (rawDepth === 16 || rawDepth === 18) depthText = '6-bit';
+        else depthText = '8-bit SDR';
 
-        const isHDR = window.matchMedia && window.matchMedia('(dynamic-range: high)').matches;
-        const depthText = isHDR && bpc < 10 ? `${bpc}-bit HDR (${rawDepth}b)` : `${bpc}-bit (${rawDepth}b)`;
-        const depthTitle = `${bpc} bits per channel (RGB) • ${rawDepth}-bit total (${Math.pow(2, rawDepth > 24 ? 30 : 24).toLocaleString()} colors)`;
+        const isWideP3 = window.matchMedia && window.matchMedia('(color-gamut: p3)').matches;
+        const gamutText = isWideP3 ? 'DCI-P3' : 'sRGB';
 
         const specRes = document.getElementById('specRes');
         const specDpr = document.getElementById('specDpr');
         const specDepth = document.getElementById('specDepth');
+        const specGamut = document.getElementById('specGamut');
         if (specRes) specRes.textContent = resText;
         if (specDpr) specDpr.textContent = dprText;
-        if (specDepth) {
-            specDepth.textContent = depthText;
-            specDepth.title = depthTitle;
-        }
+        if (specDepth) specDepth.textContent = depthText;
+        if (specGamut) specGamut.textContent = gamutText;
 
         const bannerRes = document.getElementById('bannerRes');
         const bannerDpr = document.getElementById('bannerDpr');
         const bannerDepth = document.getElementById('bannerDepth');
+        const bannerGamut = document.getElementById('bannerGamut');
         if (bannerRes) bannerRes.textContent = resText;
         if (bannerDpr) bannerDpr.textContent = dprText;
-        if (bannerDepth) {
-            bannerDepth.textContent = depthText;
-            bannerDepth.title = depthTitle;
-        }
+        if (bannerDepth) bannerDepth.textContent = depthText;
+        if (bannerGamut) bannerGamut.textContent = gamutText;
     },
 
     update(now) {
@@ -488,23 +486,33 @@ const App = {
     },
 
     acceptWarning() {
+        const warningCheck = document.getElementById('enterFullscreenWarningCheck');
+        const shouldFullscreen = !warningCheck || warningCheck.checked;
+        if (shouldFullscreen) {
+            const docEl = document.documentElement;
+            const req = docEl.requestFullscreen || 
+                        docEl.webkitRequestFullscreen || 
+                        docEl.webkitRequestFullScreen || 
+                        docEl.mozRequestFullScreen || 
+                        docEl.msRequestFullscreen;
+            if (req) {
+                try {
+                    const res = req.call(docEl);
+                    if (res && typeof res.catch === 'function') res.catch(() => {});
+                } catch (e) {}
+            }
+        }
+
         AudioEngine.init();
         AudioEngine.playClick();
-        const warningCheck = document.getElementById('enterFullscreenWarningCheck');
-        if (!warningCheck || warningCheck.checked) {
-            localStorage.setItem('dispdoc_warning_accepted', 'true');
-            localStorage.setItem('dispdoc_autofullscreen', 'true');
-            const autoCheck = document.getElementById('autoFullscreenCheck');
-            if (autoCheck) autoCheck.checked = true;
-            this.requestFullscreen();
-        } else {
-            localStorage.setItem('dispdoc_warning_accepted', 'true');
-        }
+        localStorage.setItem('dispdoc_warning_accepted', 'true');
+        localStorage.setItem('dispdoc_autofullscreen', shouldFullscreen ? 'true' : 'false');
+        const autoCheck = document.getElementById('autoFullscreenCheck');
+        if (autoCheck) autoCheck.checked = shouldFullscreen;
+
         const modal = document.getElementById('warningModal');
         if (modal) {
-            modal.style.transition = 'opacity 0.25s ease';
-            modal.style.opacity = '0';
-            setTimeout(() => { modal.style.display = 'none'; }, 250);
+            modal.style.display = 'none';
         }
         this.showToast('Diagnostics Ready // Fullscreen Active');
     },

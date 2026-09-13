@@ -30,11 +30,7 @@
     <header class="site-header">
         <div class="container nav-wrap">
             <a href="./" class="brand" title="DisplayDoctor Pro Home">
-                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
-                </svg>
+                <img src="assets/logo.svg" width="28" height="28" alt="DisplayDoctor Logo" class="brand-icon">
                 <span class="brand-title">DisplayDoctor <span class="pro-badge">PRO</span></span>
             </a>
 
@@ -94,36 +90,36 @@
                 <div class="telemetry-panel-top">
                     <span class="panel-header-title">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        LIVE HARDWARE TELEMETRY
+                        HARDWARE DISPLAY SPECS
                     </span>
                     <div class="live-indicator">
                         <span class="live-dot"></span>
-                        <span>PROACTIVE MONITOR SYNC</span>
+                        <span>HARDWARE DETECTED</span>
                     </div>
                 </div>
 
                 <div class="telemetry-specs-row">
                     <div class="telemetry-spec-tile">
-                        <span class="spec-tile-label">REFRESH RATE</span>
-                        <span class="spec-tile-value cyan" id="heroRefresh">Detecting...</span>
+                        <span class="spec-tile-label">PANEL RESOLUTION</span>
+                        <span class="spec-tile-value cyan" id="heroRes">1920×1080</span>
                     </div>
                     <div class="telemetry-spec-tile">
-                        <span class="spec-tile-label">RESOLUTION</span>
-                        <span class="spec-tile-value" id="heroRes">--</span>
+                        <span class="spec-tile-label">COLOR BIT-DEPTH</span>
+                        <span class="spec-tile-value" id="heroDepth">8-bit SDR</span>
                     </div>
                     <div class="telemetry-spec-tile">
-                        <span class="spec-tile-label">PIXEL RATIO</span>
-                        <span class="spec-tile-value" id="heroDpr">--</span>
+                        <span class="spec-tile-label">COLOR GAMUT</span>
+                        <span class="spec-tile-value" id="heroGamut">sRGB (Rec. 709)</span>
                     </div>
                     <div class="telemetry-spec-tile">
-                        <span class="spec-tile-label">COLOR DEPTH</span>
-                        <span class="spec-tile-value" id="heroDepth">8-bit (24b)</span>
+                        <span class="spec-tile-label">DISPLAY SCALING</span>
+                        <span class="spec-tile-value" id="heroDpr">1.25x (125%)</span>
                     </div>
                 </div>
 
                 <div class="telemetry-panel-footer">
-                    <span>Measured directly via GPU frame-interval clock &amp; window display API</span>
-                    <span>100% Client-Side • Zero Network Telemetry</span>
+                    <span>Hardware resolution &amp; color profile queried directly from OS screen descriptor</span>
+                    <span>100% Client-Side • Zero Telemetry Tracking</span>
                 </div>
             </div>
         </div>

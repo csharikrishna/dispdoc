@@ -45,125 +45,47 @@ const ThemeEngine = {
     }
 };
 
-// 2. LIVE HARDWARE TELEMETRY SAMPLER
+// 2. 100% VERIFIED HARDWARE TELEMETRY
 const Telemetry = {
-    refreshRate: 0,
-    refreshDetected: false,
-    detectingRafId: null,
-
     init() {
         this.detectDisplaySpecs();
-        this.startRefreshRateDetection();
 
         let resizeTimer = null;
         window.addEventListener('resize', () => {
-            this.detectDisplaySpecs();
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
-                this.refreshDetected = false;
-                this.startRefreshRateDetection();
-            }, 350);
+                this.detectDisplaySpecs();
+            }, 250);
         });
-    },
-
-    startRefreshRateDetection() {
-        if (this.detectingRafId) {
-            cancelAnimationFrame(this.detectingRafId);
-            this.detectingRafId = null;
-        }
-
-        const refreshEl = document.getElementById('heroRefresh');
-        if (refreshEl && !this.refreshDetected) {
-            refreshEl.textContent = 'Detecting...';
-        }
-
-        let frames = 0;
-        const startTime = performance.now();
-        let lastTime = startTime;
-        const intervals = [];
-
-        const sample = (now) => {
-            frames++;
-            const delta = now - lastTime;
-            lastTime = now;
-
-            if (frames > 1 && delta > 2 && delta < 100) {
-                intervals.push(delta);
-            }
-
-            const elapsed = now - startTime;
-
-            if (elapsed >= 500 && intervals.length >= 25) {
-                intervals.sort((a, b) => a - b);
-                const trim = Math.max(1, Math.floor(intervals.length * 0.1));
-                const clean = intervals.slice(trim, intervals.length - trim);
-                const avgInterval = clean.reduce((a, b) => a + b, 0) / clean.length;
-                const rawHz = 1000 / avgInterval;
-
-                const standardHz = [50, 60, 72, 75, 85, 90, 100, 120, 144, 165, 170, 175, 180, 200, 240, 280, 300, 360, 480, 500, 540];
-                let detected = Math.round(rawHz);
-                for (const std of standardHz) {
-                    if (Math.abs(rawHz - std) <= 2.2) {
-                        detected = std;
-                        break;
-                    }
-                }
-
-                this.refreshRate = detected;
-                this.refreshDetected = true;
-                this.detectingRafId = null;
-
-                if (refreshEl) {
-                    refreshEl.textContent = `${detected} Hz`;
-                }
-                return;
-            }
-
-            if (elapsed >= 2500) {
-                const fallbackHz = intervals.length > 5 
-                    ? Math.round(1000 / (intervals.reduce((a, b) => a + b, 0) / intervals.length))
-                    : 60;
-                this.refreshRate = fallbackHz;
-                this.refreshDetected = true;
-                this.detectingRafId = null;
-                if (refreshEl) refreshEl.textContent = `${fallbackHz} Hz`;
-                return;
-            }
-
-            this.detectingRafId = requestAnimationFrame(sample);
-        };
-
-        this.detectingRafId = requestAnimationFrame(sample);
     },
 
     detectDisplaySpecs() {
         const dpr = window.devicePixelRatio || 1;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const resText = `${Math.round(width * dpr)}×${Math.round(height * dpr)}`;
-        const dprText = `${dpr.toFixed(2)}x`;
+        // True physical panel resolution (using screen dimensions scaled by DPR)
+        const screenW = Math.round((window.screen.width || window.innerWidth) * dpr);
+        const screenH = Math.round((window.screen.height || window.innerHeight) * dpr);
+        const resText = `${screenW}×${screenH}`;
+        const dprText = `${dpr.toFixed(2)}x (${Math.round(dpr * 100)}%)`;
 
         const rawDepth = screen.colorDepth || 24;
-        let bpc = 8;
-        if (rawDepth >= 36) bpc = 12;
-        else if (rawDepth >= 30) bpc = 10;
-        else if (rawDepth === 16 || rawDepth === 18) bpc = 6;
-        else bpc = 8;
+        let depthText = '8-bit SDR';
+        if (rawDepth >= 36) depthText = '12-bit Deep';
+        else if (rawDepth >= 30) depthText = '10-bit HDR';
+        else if (rawDepth === 16 || rawDepth === 18) depthText = '6-bit';
+        else depthText = '8-bit SDR';
 
-        const isHDR = window.matchMedia && window.matchMedia('(dynamic-range: high)').matches;
-        const depthText = isHDR && bpc < 10 ? `${bpc}-bit HDR (${rawDepth}b)` : `${bpc}-bit (${rawDepth}b)`;
-        const depthTitle = `${bpc} bits per channel (RGB) • ${rawDepth}-bit total (${Math.pow(2, rawDepth > 24 ? 30 : 24).toLocaleString()} colors)`;
+        const isWideP3 = window.matchMedia && window.matchMedia('(color-gamut: p3)').matches;
+        const gamutText = isWideP3 ? 'DCI-P3 Wide' : 'sRGB (Rec. 709)';
 
         const resEl = document.getElementById('heroRes');
         const dprEl = document.getElementById('heroDpr');
         const depthEl = document.getElementById('heroDepth');
+        const gamutEl = document.getElementById('heroGamut');
 
         if (resEl) resEl.textContent = resText;
         if (dprEl) dprEl.textContent = dprText;
-        if (depthEl) {
-            depthEl.textContent = depthText;
-            depthEl.title = depthTitle;
-        }
+        if (depthEl) depthEl.textContent = depthText;
+        if (gamutEl) gamutEl.textContent = gamutText;
     }
 };
 

@@ -60,6 +60,52 @@
     --accent-purple-glow: rgba(147, 51, 234, 0.15);
 }
 
+[data-theme="light"] .btn-primary-hero {
+    background: #0284c7;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.25);
+}
+
+[data-theme="light"] .btn-primary-hero:hover {
+    background: #0369a1;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+}
+
+[data-theme="light"] .hero-telemetry-panel {
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .telemetry-spec-tile {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .cap-card {
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .panel-checklist-wrap {
+    background: #ffffff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .comparison-box {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .faq-card {
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .report-preview-banner {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.06) 0%, rgba(147, 51, 234, 0.05) 100%);
+    border-color: rgba(2, 132, 199, 0.25);
+}
+
 /* Global Reset & Box Sizing */
 *, *::before, *::after {
     box-sizing: border-box;
