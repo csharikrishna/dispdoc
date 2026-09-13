@@ -105,7 +105,7 @@ depend on exact mapping (gamma, sharpness) show a warning when it is off.
 
 ## Safety
 
-- The photosensitivity advisory opens on every studio visit.
+- The photosensitivity advisory opens once per browser session (every new visit, not on reloads).
 - Tests with `autoStop` end themselves after that many seconds.
 - The strobe test has `suite: false`, so Test All never runs it.
 - With `prefers-reduced-motion`, the default motion speed is lower and UI
@@ -115,8 +115,9 @@ depend on exact mapping (gamma, sharpness) show a warning when it is off.
 
 | Command          | What it does |
 |------------------|--------------|
-| `npm start`      | Serves the site at `http://localhost:8080/dispdoc/`, the same path as GitHub Pages |
+| `npm start`      | Serves the site at `http://localhost:8080/panelprobe/`, the same path as GitHub Pages |
 | `npm run lint`   | ESLint on browser code and scripts |
 | `npm run check`  | Static consistency checks (registry, catalog, ids, asset links, no third-party requests) |
 | `npm test`       | Headless-Chrome smoke test covering every pattern, hotkeys, Test All, wizard, report, and mobile layout |
 | `npm run verify` | All of the above; this is what CI runs |
+| `npm run social-card` | Regenerates `assets/social-card.png`, the link-preview image |

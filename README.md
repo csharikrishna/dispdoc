@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://csharikrishna.github.io/dispdoc/">
+  <a href="https://csharikrishna.github.io/panelprobe/">
     <img src="assets/logo.svg" width="88" height="88" alt="PanelProbe logo">
   </a>
 </p>
@@ -11,17 +11,24 @@
 </p>
 
 <p align="center">
-  <a href="https://csharikrishna.github.io/dispdoc/"><strong>Website</strong></a> ·
-  <a href="https://csharikrishna.github.io/dispdoc/studio/"><strong>Open the Studio</strong></a> ·
+  <a href="https://csharikrishna.github.io/panelprobe/"><strong>Website</strong></a> ·
+  <a href="https://csharikrishna.github.io/panelprobe/studio/"><strong>Open the Studio</strong></a> ·
   <a href="#test-catalog">Tests</a> ·
   <a href="#keyboard-shortcuts">Shortcuts</a> ·
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 <p align="center">
+  <a href="https://github.com/csharikrishna/panelprobe/releases"><img src="https://img.shields.io/github/v/release/csharikrishna/panelprobe?label=release" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
-  <a href="https://github.com/csharikrishna/dispdoc/actions/workflows/ci.yml"><img src="https://github.com/csharikrishna/dispdoc/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/csharikrishna/panelprobe/actions/workflows/ci.yml"><img src="https://github.com/csharikrishna/panelprobe/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <img src="https://img.shields.io/badge/runtime%20dependencies-0-brightgreen.svg" alt="Zero runtime dependencies">
+</p>
+
+<p align="center">
+  <a href="https://csharikrishna.github.io/panelprobe/">
+    <img src="assets/social-card.png" width="720" alt="PanelProbe — pixel-perfect display tests, right in your browser">
+  </a>
 </p>
 
 ---
@@ -46,7 +53,7 @@ There's nothing to install and nothing leaves your machine.
 
 > [!WARNING]
 > Some stress tests contain **flashing images** that can trigger seizures in people with photosensitive epilepsy.
-> The studio shows a warning on every visit. Flashing tests stop automatically, and the strobe is never included in Test All.
+> The studio shows a warning at the start of every visit. Flashing tests stop automatically, and the strobe is never included in Test All.
 
 ## Test catalog
 
@@ -103,10 +110,10 @@ On touch screens, swipe left or right to change tests and tap to show or hide th
 No build step is needed. Any static file server works:
 
 ```bash
-git clone https://github.com/csharikrishna/dispdoc.git
-cd dispdoc
+git clone https://github.com/csharikrishna/panelprobe.git
+cd panelprobe
 npm install      # dev tools only: lint, checks, smoke test
-npm start        # http://localhost:8080/dispdoc/
+npm start        # http://localhost:8080/panelprobe/
 ```
 
 Without Node, any static server works, for example `python -m http.server 8000`, then open `http://localhost:8000/`.
@@ -121,6 +128,7 @@ npm run lint     # ESLint
 npm run check    # registry, catalog, ids, and asset links stay in sync
 npm test         # headless Chrome smoke test (set CHROME_PATH if Chrome isn't found)
 npm run verify   # all of the above; this is what CI runs
+npm run social-card  # regenerate assets/social-card.png after branding changes
 ```
 
 ## Project structure
@@ -132,8 +140,8 @@ studio/                 Diagnostic studio
   js/tests/patterns-*.js  Pattern renderers
   js/core/ js/ui/       Audio, fullscreen, telemetry; HUD, wizard, report…
   js/app.js             Controller
-assets/                 Shared CSS/JS, fonts, logo
-scripts/                Dev server, static checks, smoke test
+assets/                 Shared CSS/JS, fonts, logo, social card
+scripts/                Dev server, static checks, smoke test, social card builder
 docs/                   Architecture and design decisions
 ```
 

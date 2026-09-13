@@ -13,7 +13,7 @@ supported.
 ## Reporting a vulnerability
 
 Please **don't open a public issue** for security problems. Instead, use
-[GitHub private vulnerability reporting](https://github.com/csharikrishna/dispdoc/security/advisories/new).
+[GitHub private vulnerability reporting](https://github.com/csharikrishna/panelprobe/security/advisories/new).
 
 Include steps to reproduce and the potential impact. You should get an
 acknowledgement within a week.

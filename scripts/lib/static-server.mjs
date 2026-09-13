@@ -18,7 +18,7 @@ const TYPES = {
 };
 
 /**
- * Serve `root` under an optional URL `base` (e.g. "/dispdoc/" to mirror
+ * Serve `root` under an optional URL `base` (e.g. "/panelprobe/" to mirror
  * GitHub Pages project sites).
  */
 export function startServer({ root, port = 8080, base = '/' }) {

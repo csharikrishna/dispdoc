@@ -36,7 +36,7 @@
         accept.disabled = state !== 'active';
     }
 
-    const SESSION_KEY = 'dispdoc_warning_session';
+    const SESSION_KEY = 'panelprobe_warning_session';
 
     function acknowledgedThisSession() {
         try {

@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
   <defs>
-    <linearGradient id="dispdoc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="panelprobe-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00f0ff"/>
       <stop offset="100%" stop-color="#a855f7"/>
     </linearGradient>
-    <linearGradient id="dispdoc-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="panelprobe-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#00f0ff"/>
       <stop offset="100%" stop-color="#00c8ff"/>
     </linearGradient>
   </defs>
 
   <!-- Outer Display Frame -->
-  <rect x="5" y="6" width="38" height="25" rx="3.5" stroke="url(#dispdoc-grad)" stroke-width="2.25" stroke-linecap="round"/>
+  <rect x="5" y="6" width="38" height="25" rx="3.5" stroke="url(#panelprobe-grad)" stroke-width="2.25" stroke-linecap="round"/>
   
   <!-- Display Stand & Foot -->
-  <path d="M24 31V38" stroke="url(#dispdoc-cyan)" stroke-width="2.25" stroke-linecap="round"/>
-  <path d="M16 38H32" stroke="url(#dispdoc-cyan)" stroke-width="2.25" stroke-linecap="round"/>
+  <path d="M24 31V38" stroke="url(#panelprobe-cyan)" stroke-width="2.25" stroke-linecap="round"/>
+  <path d="M16 38H32" stroke="url(#panelprobe-cyan)" stroke-width="2.25" stroke-linecap="round"/>
 
   <!-- Precision Calibration Crosshairs -->
   <line x1="12" y1="18.5" x2="19" y2="18.5" stroke="#00f0ff" stroke-width="1.75" stroke-linecap="round"/>

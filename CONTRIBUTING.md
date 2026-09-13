@@ -5,7 +5,7 @@ problems, propose tests, and send pull requests.
 
 ## Reporting bugs
 
-Open an [issue](https://github.com/csharikrishna/dispdoc/issues/new/choose) and include:
+Open an [issue](https://github.com/csharikrishna/panelprobe/issues/new/choose) and include:
 
 - Browser and version, operating system, and device or monitor model
 - Display scaling (e.g. 125%) and refresh rate
@@ -31,7 +31,7 @@ for the smoke test.
 
 ```bash
 npm install
-npm start          # http://localhost:8080/dispdoc/
+npm start          # http://localhost:8080/panelprobe/
 npm run verify     # lint + static checks + browser smoke test
 ```
 

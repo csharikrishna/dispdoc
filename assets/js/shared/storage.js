@@ -6,7 +6,7 @@
 (function (DD) {
     'use strict';
 
-    const PREFIX = 'dispdoc_';
+    const PREFIX = 'panelprobe_';
     const memory = new Map();
 
     function get(key, fallback = null) {

@@ -35,7 +35,7 @@ export default [
     },
     {
         // Code evaluated inside the page by Puppeteer.
-        files: ['scripts/smoke-test.mjs'],
+        files: ['scripts/smoke-test.mjs', 'scripts/build-social-card.mjs'],
         languageOptions: {
             globals: { ...globals.browser, DD: 'readonly' }
         }

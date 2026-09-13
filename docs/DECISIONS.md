@@ -84,4 +84,5 @@ Append-only log of non-obvious engineering decisions, rationale, and behavioral 
 ### Entry 011: Rename to PanelProbe
 - **Date**: 2026-09-13
 - **Context**: "Display Doctor" is already used by a screen-testing Android app (Google Play) and by the SciTech Display Doctor driver suite.
-- **Decision**: Rename the product to **PanelProbe**. Search, GitHub, and npm showed no conflicts. The GitHub repository, the Pages URL (`/dispdoc/`), and `localStorage` keys (`dispdoc_*`) are unchanged, so links and saved preferences keep working.
+- **Decision**: Rename the product to **PanelProbe**. Search, GitHub, and npm showed no conflicts. The repository became `csharikrishna/panelprobe` (lowercase, because GitHub Pages paths are case-sensitive), the site moved to `/panelprobe/`, and `localStorage` keys use the `panelprobe_` prefix.
+- **Outcome**: Released as **v1.0.0**, the first public version under the new name. Earlier internal version numbers (4.x) were retired.

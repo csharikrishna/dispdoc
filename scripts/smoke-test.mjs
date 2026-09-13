@@ -14,7 +14,7 @@ import { startServer } from './lib/static-server.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT) || 8791;
-const BASE = `http://localhost:${PORT}/dispdoc/`;
+const BASE = `http://localhost:${PORT}/panelprobe/`;
 const SHOTS = process.env.SCREENSHOT_DIR ? resolve(process.env.SCREENSHOT_DIR) : null;
 
 function findChrome() {
@@ -282,7 +282,7 @@ if (!chrome) {
     process.exit(1);
 }
 
-const server = await startServer({ root: ROOT, port: PORT, base: '/dispdoc/' });
+const server = await startServer({ root: ROOT, port: PORT, base: '/panelprobe/' });
 const browser = await puppeteer.launch({ executablePath: chrome, headless: true, args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required'] });
 
 try {
