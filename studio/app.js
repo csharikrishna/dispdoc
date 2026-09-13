@@ -480,8 +480,21 @@ const App = {
     checkWarningStatus() {
         const accepted = localStorage.getItem('dispdoc_warning_accepted') === 'true';
         const modal = document.getElementById('warningModal');
-        if (accepted && modal) {
-            modal.style.display = 'none';
+        if (!modal) return;
+        if (accepted) {
+            if (!document.fullscreenElement) {
+                const title = document.getElementById('warningTitle');
+                const lead = modal.querySelector('.warning-lead');
+                const sub = modal.querySelector('.warning-sub');
+                const btn = document.getElementById('acceptWarningBtn');
+                if (title) title.textContent = 'Enter Fullscreen Diagnostic Studio';
+                if (lead) lead.textContent = 'DisplayDoctor Pro requires exclusive fullscreen mode for uncompressed pixel mapping, 0-nit blackouts, and calibrated motion tests.';
+                if (sub) sub.style.display = 'none';
+                if (btn) btn.textContent = 'Enter Studio (Fullscreen)';
+                modal.style.display = 'flex';
+            } else {
+                modal.style.display = 'none';
+            }
         }
     },
 
@@ -2640,6 +2653,11 @@ const App = {
 // ==========================================================================
 // 6. INITIALIZE ON DOM CONTENT LOADED
 // ==========================================================================
+window.App = App;
+window.AudioEngine = AudioEngine;
+window.ThemeEngine = ThemeEngine;
+window.Telemetry = Telemetry;
+
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
 });
