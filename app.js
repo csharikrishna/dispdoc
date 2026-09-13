@@ -94,11 +94,104 @@ const Telemetry = {
     refreshDetected: false,
     measureStart: 0,
     measureFrames: 0,
+    detectingRafId: null,
 
     init() {
         this.measureStart = performance.now();
         this.measureFrames = 0;
         this.detectDisplaySpecs();
+        this.startRefreshRateDetection();
+
+        // Re-detect on window resize or monitor migration
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            this.detectDisplaySpecs();
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                this.refreshDetected = false;
+                this.startRefreshRateDetection();
+            }, 350);
+        });
+    },
+
+    startRefreshRateDetection() {
+        if (this.detectingRafId) {
+            cancelAnimationFrame(this.detectingRafId);
+            this.detectingRafId = null;
+        }
+
+        const refreshEl = document.getElementById('specRefresh');
+        const bannerRefresh = document.getElementById('bannerRefresh');
+        if (refreshEl && !this.refreshDetected) refreshEl.textContent = 'Detecting...';
+        if (bannerRefresh && !this.refreshDetected) bannerRefresh.textContent = 'Detecting...';
+
+        let frames = 0;
+        const startTime = performance.now();
+        let lastTime = startTime;
+        const intervals = [];
+
+        const sample = (now) => {
+            frames++;
+            const delta = now - lastTime;
+            lastTime = now;
+
+            // Discard startup anomaly and background tab stalls
+            if (frames > 1 && delta > 2 && delta < 100) {
+                intervals.push(delta);
+            }
+
+            const elapsed = now - startTime;
+
+            // Sample for 500ms or 30 valid frame intervals for precision
+            if (elapsed >= 500 && intervals.length >= 25) {
+                intervals.sort((a, b) => a - b);
+                // Trim 10% outliers (GC jitter or browser frame skip)
+                const trim = Math.max(1, Math.floor(intervals.length * 0.1));
+                const clean = intervals.slice(trim, intervals.length - trim);
+                const avgInterval = clean.reduce((a, b) => a + b, 0) / clean.length;
+                const rawHz = 1000 / avgInterval;
+
+                // Common display refresh rates to snap within ±2.2 Hz
+                const standardHz = [50, 60, 72, 75, 85, 90, 100, 120, 144, 165, 170, 175, 180, 200, 240, 280, 300, 360, 480, 500, 540];
+                let detected = Math.round(rawHz);
+                for (const std of standardHz) {
+                    if (Math.abs(rawHz - std) <= 2.2) {
+                        detected = std;
+                        break;
+                    }
+                }
+
+                this.refreshRate = detected;
+                this.refreshDetected = true;
+                this.targetFrameTime = 1000 / detected;
+                this.detectingRafId = null;
+
+                const text = `${detected} Hz`;
+                if (refreshEl) refreshEl.textContent = text;
+                if (bannerRefresh) bannerRefresh.textContent = text;
+                return;
+            }
+
+            // Fallback safety timeout if running in heavily throttled environment
+            if (elapsed >= 2500) {
+                const fallbackHz = intervals.length > 5 
+                    ? Math.round(1000 / (intervals.reduce((a, b) => a + b, 0) / intervals.length))
+                    : 60;
+                this.refreshRate = fallbackHz;
+                this.refreshDetected = true;
+                this.targetFrameTime = 1000 / fallbackHz;
+                this.detectingRafId = null;
+
+                const text = `${fallbackHz} Hz`;
+                if (refreshEl) refreshEl.textContent = text;
+                if (bannerRefresh) bannerRefresh.textContent = text;
+                return;
+            }
+
+            this.detectingRafId = requestAnimationFrame(sample);
+        };
+
+        this.detectingRafId = requestAnimationFrame(sample);
     },
 
     detectDisplaySpecs() {
@@ -107,21 +200,38 @@ const Telemetry = {
         const height = window.innerHeight;
         const resText = `${Math.round(width * dpr)}×${Math.round(height * dpr)}`;
         const dprText = `${dpr.toFixed(2)}x`;
-        const depthText = `${screen.colorDepth || 24}-bit`;
+
+        // Format color depth to reflect actual bits-per-channel (8-bit, 10-bit, 12-bit)
+        const rawDepth = screen.colorDepth || 24;
+        let bpc = 8;
+        if (rawDepth >= 36) bpc = 12;
+        else if (rawDepth >= 30) bpc = 10;
+        else if (rawDepth === 16 || rawDepth === 18) bpc = 6;
+        else bpc = 8;
+
+        const isHDR = window.matchMedia && window.matchMedia('(dynamic-range: high)').matches;
+        const depthText = isHDR && bpc < 10 ? `${bpc}-bit HDR (${rawDepth}b)` : `${bpc}-bit (${rawDepth}b)`;
+        const depthTitle = `${bpc} bits per channel (RGB) • ${rawDepth}-bit total (${Math.pow(2, rawDepth > 24 ? 30 : 24).toLocaleString()} colors)`;
 
         const specRes = document.getElementById('specRes');
         const specDpr = document.getElementById('specDpr');
         const specDepth = document.getElementById('specDepth');
         if (specRes) specRes.textContent = resText;
         if (specDpr) specDpr.textContent = dprText;
-        if (specDepth) specDepth.textContent = depthText;
+        if (specDepth) {
+            specDepth.textContent = depthText;
+            specDepth.title = depthTitle;
+        }
 
         const bannerRes = document.getElementById('bannerRes');
         const bannerDpr = document.getElementById('bannerDpr');
         const bannerDepth = document.getElementById('bannerDepth');
         if (bannerRes) bannerRes.textContent = resText;
         if (bannerDpr) bannerDpr.textContent = dprText;
-        if (bannerDepth) bannerDepth.textContent = depthText;
+        if (bannerDepth) {
+            bannerDepth.textContent = depthText;
+            bannerDepth.title = depthTitle;
+        }
     },
 
     update(now) {
@@ -141,11 +251,11 @@ const Telemetry = {
             if (droppedEl) droppedEl.textContent = this.droppedFrames;
         }
 
-        // Detect refresh rate over first 1000ms
+        // Continual refinement if not yet detected
         if (!this.refreshDetected) {
             this.measureFrames++;
             const elapsed = now - this.measureStart;
-            if (elapsed >= 1000) {
+            if (elapsed >= 800) {
                 this.refreshRate = Math.round((this.measureFrames * 1000) / elapsed);
                 this.refreshDetected = true;
                 this.targetFrameTime = 1000 / this.refreshRate;
@@ -567,21 +677,16 @@ const App = {
         if (acceptBtn) acceptBtn.addEventListener('click', () => this.acceptWarning());
 
         const warningCheck = document.getElementById('enterFullscreenWarningCheck');
-        const warningLabel = document.getElementById('enterFullscreenWarningLabel');
-        const triggerWarningFs = () => {
-            if (warningCheck && warningCheck.checked) {
-                this.requestFullscreen();
-                localStorage.setItem('dispdoc_autofullscreen', 'true');
-                const autoCheck = document.getElementById('autoFullscreenCheck');
-                if (autoCheck) autoCheck.checked = true;
-            }
-        };
         if (warningCheck) {
-            warningCheck.addEventListener('click', triggerWarningFs);
-            warningCheck.addEventListener('change', triggerWarningFs);
-        }
-        if (warningLabel) {
-            warningLabel.addEventListener('click', () => setTimeout(triggerWarningFs, 10));
+            const saved = localStorage.getItem('dispdoc_autofullscreen');
+            if (saved !== null) {
+                warningCheck.checked = saved === 'true';
+            }
+            warningCheck.addEventListener('change', () => {
+                localStorage.setItem('dispdoc_autofullscreen', warningCheck.checked ? 'true' : 'false');
+                const autoCheck = document.getElementById('autoFullscreenCheck');
+                if (autoCheck) autoCheck.checked = warningCheck.checked;
+            });
         }
 
         // 2. Dashboard Header & Hero Tools
@@ -1023,6 +1128,10 @@ const App = {
 
     requestFullscreen() {
         try {
+            if (document.fullscreenEnabled === false || document.webkitFullscreenEnabled === false) {
+                return;
+            }
+
             const isFs = document.fullscreenElement || 
                          document.webkitFullscreenElement || 
                          document.mozFullScreenElement || 
@@ -1042,13 +1151,14 @@ const App = {
                     res.then(() => {
                         this.updateFullscreenUi(true);
                     }).catch(err => {
-                        console.warn('Fullscreen request rejected by browser:', err);
-                        this.showToast('Press F11 for Fullscreen (Browser Security)', 2800);
+                        if (err && err.name !== 'TypeError' && err.name !== 'NotAllowedError') {
+                            console.warn('Fullscreen request rejected by browser:', err);
+                        }
                     });
                 }
             }
         } catch (e) {
-            console.warn('Fullscreen invocation error:', e);
+            // Non-blocking
         }
     },
 
@@ -2407,7 +2517,13 @@ const App = {
         if (repRes) repRes.textContent = `${Math.round(window.innerWidth * dpr)}×${Math.round(window.innerHeight * dpr)}`;
         if (repRefresh) repRefresh.textContent = Telemetry.refreshRate ? `${Telemetry.refreshRate} Hz` : `${Telemetry.fps} Hz (Active)`;
         if (repDpr) repDpr.textContent = `${dpr.toFixed(2)}x`;
-        if (repDepth) repDepth.textContent = `${screen.colorDepth || 24}-bit`;
+        const rawDepth = screen.colorDepth || 24;
+        let bpc = 8;
+        if (rawDepth >= 36) bpc = 12;
+        else if (rawDepth >= 30) bpc = 10;
+        else if (rawDepth === 16 || rawDepth === 18) bpc = 6;
+        else bpc = 8;
+        if (repDepth) repDepth.textContent = `${bpc}-bit (${rawDepth}b TrueColor)`;
         if (repTime) repTime.textContent = new Date().toLocaleString();
 
         tableBody.innerHTML = '';
