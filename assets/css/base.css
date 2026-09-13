@@ -1,0 +1,215 @@
+/* ==========================================================================
+   DisplayDoctor Pro — Shared Foundation
+   Self-hosted fonts, design tokens (dark + light), reset, and a11y defaults.
+   Loaded by both the landing page and the studio before page styles.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Fonts (self-hosted, SIL OFL 1.1 — see assets/fonts/)
+   -------------------------------------------------------------------------- */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('../fonts/inter-latin-var.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('../fonts/jetbrains-mono-latin-var.woff2') format('woff2');
+}
+
+/* --------------------------------------------------------------------------
+   2. Design Tokens
+   -------------------------------------------------------------------------- */
+:root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
+    --radius-full: 9999px;
+
+    --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Dark theme (default) */
+    --bg-base: #08090d;
+    --bg-surface: #10131b;
+    --bg-surface-elevated: #161b26;
+    --bg-surface-hover: #1c2230;
+    --bg-glass: rgba(12, 14, 20, 0.86);
+
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-medium: rgba(255, 255, 255, 0.13);
+    --border-highlight: rgba(0, 229, 255, 0.4);
+
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #7c8aa0;
+
+    --accent-cyan: #00e5ff;
+    --accent-cyan-soft: rgba(0, 229, 255, 0.1);
+    --accent-cyan-glow: rgba(0, 229, 255, 0.25);
+    --accent-purple: #a78bfa;
+    --accent-purple-soft: rgba(167, 139, 250, 0.1);
+    --accent-emerald: #10b981;
+    --accent-emerald-soft: rgba(16, 185, 129, 0.12);
+    --accent-amber: #f59e0b;
+    --accent-amber-soft: rgba(245, 158, 11, 0.14);
+    --accent-rose: #f43f5e;
+    --accent-rose-soft: rgba(244, 63, 94, 0.12);
+
+    --on-accent: #041014;
+
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+    --shadow-elevated: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+    color-scheme: dark;
+}
+
+[data-theme="light"] {
+    --bg-base: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #f1f5f9;
+    --bg-surface-hover: #e2e8f0;
+    --bg-glass: rgba(255, 255, 255, 0.92);
+
+    --border-subtle: #e2e8f0;
+    --border-medium: #cbd5e1;
+    --border-highlight: rgba(2, 132, 199, 0.45);
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+
+    --accent-cyan: #0284c7;
+    --accent-cyan-soft: rgba(2, 132, 199, 0.08);
+    --accent-cyan-glow: rgba(2, 132, 199, 0.2);
+    --accent-purple: #7c3aed;
+    --accent-purple-soft: rgba(124, 58, 237, 0.08);
+    --accent-emerald: #059669;
+    --accent-emerald-soft: rgba(5, 150, 105, 0.1);
+    --accent-amber: #b45309;
+    --accent-amber-soft: rgba(180, 83, 9, 0.1);
+    --accent-rose: #e11d48;
+    --accent-rose-soft: rgba(225, 29, 72, 0.08);
+
+    --on-accent: #ffffff;
+
+    --shadow-card: 0 2px 10px rgba(15, 23, 42, 0.05);
+    --shadow-elevated: 0 12px 32px rgba(15, 23, 42, 0.1);
+
+    color-scheme: light;
+}
+
+/* --------------------------------------------------------------------------
+   3. Reset
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+img, svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Shared Elements
+   -------------------------------------------------------------------------- */
+kbd {
+    display: inline-block;
+    min-width: 1.6em;
+    padding: 0 5px;
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    font-weight: 600;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--text-primary);
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-medium);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   4. Accessibility Defaults
+   -------------------------------------------------------------------------- */
+:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+}
+
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    z-index: 10000;
+    background: var(--accent-cyan);
+    color: var(--on-accent);
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.skip-link:focus {
+    top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

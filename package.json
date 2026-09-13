@@ -1,0 +1,32 @@
+{
+  "name": "displaydoctor-pro",
+  "version": "4.2.0",
+  "private": true,
+  "description": "Browser-based display test patterns and calibration aids for OLED, IPS, and mobile screens.",
+  "license": "MIT",
+  "author": "CS Hari Krishna",
+  "homepage": "https://csharikrishna.github.io/dispdoc/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/csharikrishna/dispdoc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/csharikrishna/dispdoc/issues"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "lint": "eslint .",
+    "check": "node scripts/check.mjs",
+    "test": "node scripts/smoke-test.mjs",
+    "verify": "npm run lint && npm run check && npm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "puppeteer-core": "^25.10.0"
+  }
+}

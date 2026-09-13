@@ -1,0 +1,33 @@
+name: Bug report
+description: Something doesn't work or looks wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: test
+    attributes:
+      label: Test or page
+      placeholder: e.g. Gamma Calibration (C), landing page, report
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & OS
+      placeholder: e.g. Chrome 140 on Windows 11
+    validations:
+      required: true
+  - type: input
+    id: display
+    attributes:
+      label: Display
+      placeholder: e.g. LG 27GR95QE, 2560×1440, 240 Hz, 125% scaling
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or photos
+      description: A phone photo of the screen often shows panel artifacts better than a screenshot.

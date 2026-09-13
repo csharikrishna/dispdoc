@@ -1,0 +1,25 @@
+name: Feature or test request
+description: Suggest a new test pattern or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What should it help people find or do?
+      description: The defect it reveals, and which panel types it applies to.
+    validations:
+      required: true
+  - type: textarea
+    id: judging
+    attributes:
+      label: How would a user judge the result?
+      description: What does "good" look like, and what does "bad" look like?
+  - type: dropdown
+    id: flashing
+    attributes:
+      label: Does it involve flashing or strobing?
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true
