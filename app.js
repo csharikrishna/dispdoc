@@ -36,7 +36,11 @@ const AudioEngine = {
 
     updateMuteIcon() {
         const icon = document.getElementById('muteIcon');
-        if (icon) icon.textContent = this.muted ? '🔇' : '🔊';
+        if (icon) {
+            icon.innerHTML = this.muted
+                ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
+                : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+        }
     },
 
     playTone(freq = 440, duration = 0.08, type = 'sine', volume = 0.05) {
@@ -235,10 +239,10 @@ const ThemeEngine = {
         const icon = document.getElementById('themeIcon');
         const label = document.getElementById('themeLabel');
         if (this.current === 'light') {
-            if (icon) icon.textContent = '🌙';
+            if (icon) icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
             if (label) label.textContent = 'Dark';
         } else {
-            if (icon) icon.textContent = '☀️';
+            if (icon) icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
             if (label) label.textContent = 'Light';
         }
     }
@@ -586,6 +590,9 @@ const App = {
 
         const runAllHero = document.getElementById('btnRunAllTestsHero');
         if (runAllHero) runAllHero.addEventListener('click', () => this.startTestAll());
+
+        const wizardHero = document.getElementById('btnWizardHero');
+        if (wizardHero) wizardHero.addEventListener('click', () => this.startWizard());
 
         const themeBtn = document.getElementById('btnToggleTheme');
         if (themeBtn) themeBtn.addEventListener('click', () => ThemeEngine.toggle());
@@ -1218,7 +1225,11 @@ const App = {
     togglePause() {
         this.isPaused = !this.isPaused;
         const icon = document.getElementById('pauseIcon');
-        if (icon) icon.textContent = this.isPaused ? '▶' : '⏸';
+        if (icon) {
+            icon.innerHTML = this.isPaused
+                ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`
+                : `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+        }
         AudioEngine.playTone(this.isPaused ? 300 : 600, 0.08, 'sine');
         this.showToast(this.isPaused ? 'Test Paused (Space)' : 'Test Resumed');
 
@@ -1354,7 +1365,9 @@ const App = {
         if (specMode) specMode.textContent = mode.toUpperCase();
 
         const pauseIcon = document.getElementById('pauseIcon');
-        if (pauseIcon) pauseIcon.textContent = '⏸';
+        if (pauseIcon) {
+            pauseIcon.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+        }
 
         const safetyBadge = document.getElementById('safetyBadge');
         if (safetyBadge) safetyBadge.style.display = 'none';
