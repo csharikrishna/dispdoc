@@ -28,6 +28,7 @@
     
     
     
+    
     <!-- =====================================================================
          LANDING VIEW: Flagship Product Showcase & Specifications
          ===================================================================== -->
@@ -55,7 +56,10 @@
                 <a href="https://github.com/csharikrishna/dispdoc" target="_blank" rel="noopener noreferrer" class="btn-icon" title="GitHub Repository" aria-label="GitHub Repository">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
                 </a>
-                <a href="./studio/" class="btn-launch-nav" id="btnLaunchNav" id="btnLaunchNav" id="btnLaunchNav" id="btnLaunchNav" title="Launch Full Diagnostic Studio">
+                <button id="btnLandingFullscreen" class="btn-icon" title="Toggle Fullscreen Mode (F / F11)" aria-label="Toggle Fullscreen Mode">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M21 15v6h-6m6 0l-7-7M3 9V3h6M3 3l7 7"/></svg>
+                </button>
+                <a href="./studio/" class="btn-launch-nav" id="btnLaunchNav" title="Launch Full Diagnostic Studio">
                     <span>Launch Studio</span>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </a>
@@ -560,8 +564,9 @@
                 <button id="btnToggleStats" class="btn-tool icon-only" title="Toggle Telemetry Panel (S)" aria-label="Toggle Hardware Telemetry Drawer">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 </button>
-                <button id="btnToggleFullscreen" class="btn-tool icon-only" title="Toggle Fullscreen (F)" aria-label="Toggle Fullscreen Mode">
+                <button id="btnToggleFullscreen" class="btn-tool" title="Toggle Fullscreen Mode (F / F11)" aria-label="Toggle Fullscreen Mode">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M21 15v6h-6m6 0l-7-7M3 9V3h6M3 3l7 7"/></svg>
+                    <span class="tool-text" id="fsHeaderText">Fullscreen</span>
                 </button>
             </div>
         </header>
@@ -580,6 +585,10 @@
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         <span>Run Full Suite (24 Tests)</span>
                     </button>
+                    <button id="btnFullscreenHero" class="btn-secondary-action btn-fullscreen-cta" title="Toggle Fullscreen Mode (F / F11)" aria-label="Toggle Fullscreen Mode">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M21 15v6h-6m6 0l-7-7M3 9V3h6M3 3l7 7"/></svg>
+                        <span id="fsHeroText">Fullscreen Mode</span>
+                    </button>
                     <button id="btnWizardHero" class="btn-secondary-action" title="Start 2-Minute Guided Diagnostic">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                         <span>Guided Wizard</span>
@@ -590,10 +599,16 @@
             <div class="studio-telemetry-card">
                 <div class="telemetry-card-header">
                     <span class="telemetry-label">HARDWARE TELEMETRY</span>
-                    <label class="toggle-checkbox" title="Automatically request fullscreen when any test is launched">
-                        <input type="checkbox" id="autoFullscreenCheck" checked>
-                        <span class="toggle-label">Auto Fullscreen</span>
-                    </label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button id="btnFullscreenTelemetry" class="btn-telemetry-fs" title="Expand Studio to Fullscreen">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M21 15v6h-6m6 0l-7-7M3 9V3h6M3 3l7 7"/></svg>
+                            <span id="fsTelemText">Fullscreen</span>
+                        </button>
+                        <label class="toggle-checkbox" title="Automatically request fullscreen when any test is launched">
+                            <input type="checkbox" id="autoFullscreenCheck" checked>
+                            <span class="toggle-label">Auto Fullscreen</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="telemetry-metrics-grid">
                     <div class="metric-cell">

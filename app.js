@@ -747,6 +747,12 @@ const App = {
         const fsBtn = document.getElementById('btnToggleFullscreen');
         if (fsBtn) fsBtn.addEventListener('click', () => this.toggleFullscreen());
 
+        const heroFsBtn = document.getElementById('btnFullscreenHero');
+        if (heroFsBtn) heroFsBtn.addEventListener('click', () => this.toggleFullscreen());
+
+        const telemFsBtn = document.getElementById('btnFullscreenTelemetry');
+        if (telemFsBtn) telemFsBtn.addEventListener('click', () => this.toggleFullscreen());
+
         // 3. Category Filter Tabs
         document.querySelectorAll('#categoryNav .nav-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1165,83 +1171,120 @@ const App = {
     },
 
     updateFullscreenUi(isFs) {
+        // 1. Top Header Tool Button
         const fsBtn = document.getElementById('btnToggleFullscreen');
         if (fsBtn) {
             fsBtn.classList.toggle('active', isFs);
             fsBtn.title = isFs ? 'Exit Fullscreen (F)' : 'Toggle Fullscreen (F)';
+            const txt = fsBtn.querySelector('#fsHeaderText') || fsBtn.querySelector('.tool-text');
+            if (txt) txt.textContent = isFs ? 'Exit Fullscreen' : 'Fullscreen';
+        }
+
+        // 2. Command Bar Hero Button
+        const heroFsBtn = document.getElementById('btnFullscreenHero');
+        if (heroFsBtn) {
+            heroFsBtn.classList.toggle('active', isFs);
+            heroFsBtn.title = isFs ? 'Exit Fullscreen Mode (F)' : 'Enter Fullscreen Mode (F)';
+            const txt = document.getElementById('fsHeroText');
+            if (txt) txt.textContent = isFs ? 'Exit Fullscreen' : 'Fullscreen Mode';
+        }
+
+        // 3. Telemetry Card Quick Button
+        const telemFsBtn = document.getElementById('btnFullscreenTelemetry');
+        if (telemFsBtn) {
+            telemFsBtn.classList.toggle('active', isFs);
+            const txt = document.getElementById('fsTelemText');
+            if (txt) txt.textContent = isFs ? 'Exit' : 'Fullscreen';
+        }
+
+        // 4. Landing Header Button
+        const landingFsBtn = document.getElementById('btnLandingFullscreen');
+        if (landingFsBtn) {
+            landingFsBtn.classList.toggle('active', isFs);
+            landingFsBtn.title = isFs ? 'Exit Fullscreen' : 'Enter Fullscreen';
         }
     },
 
     requestFullscreen() {
-        try {
-            if (document.fullscreenEnabled === false || document.webkitFullscreenEnabled === false) {
-                return;
-            }
+        const docEl = document.documentElement;
+        const req = docEl.requestFullscreen || 
+                    docEl.webkitRequestFullscreen || 
+                    docEl.webkitRequestFullScreen || 
+                    docEl.mozRequestFullScreen || 
+                    docEl.msRequestFullscreen;
 
-            const isFs = document.fullscreenElement || 
-                         document.webkitFullscreenElement || 
-                         document.mozFullScreenElement || 
-                         document.msFullscreenElement;
-            if (isFs) return;
+        let nativeAttempted = false;
 
-            const docEl = document.documentElement;
-            const req = docEl.requestFullscreen || 
-                        docEl.webkitRequestFullscreen || 
-                        docEl.webkitRequestFullScreen || 
-                        docEl.mozRequestFullScreen || 
-                        docEl.msRequestFullscreen;
-
-            if (req) {
+        if (req && document.fullscreenEnabled !== false) {
+            try {
                 const res = req.call(docEl);
                 if (res && typeof res.then === 'function') {
+                    nativeAttempted = true;
                     res.then(() => {
                         this.updateFullscreenUi(true);
-                    }).catch(err => {
-                        if (err && err.name !== 'TypeError' && err.name !== 'NotAllowedError') {
-                            console.warn('Fullscreen request rejected by browser:', err);
-                        }
+                        this.showToast('Hardware Fullscreen Active');
+                    }).catch(() => {
+                        // Native request denied (e.g. webview, iframe, or gesture policy) -> Activate full viewport fallback!
+                        this.activateFallbackFullscreen();
                     });
+                } else {
+                    nativeAttempted = true;
+                    this.updateFullscreenUi(true);
                 }
+            } catch (e) {
+                this.activateFallbackFullscreen();
             }
-        } catch (e) {
-            // Non-blocking
         }
+
+        if (!nativeAttempted) {
+            this.activateFallbackFullscreen();
+        }
+    },
+
+    activateFallbackFullscreen() {
+        document.body.classList.add('is-fullscreen-fallback');
+        this.updateFullscreenUi(true);
+        this.resizeCanvas();
+        this.showToast('Full Viewport Active (Press F11 for Exclusive Mode)', 3200);
     },
 
     exitFullscreen() {
-        try {
-            const isFs = document.fullscreenElement || 
-                         document.webkitFullscreenElement || 
-                         document.mozFullScreenElement || 
-                         document.msFullscreenElement;
-            if (!isFs) return;
-
-            const exit = document.exitFullscreen || 
-                         document.webkitExitFullscreen || 
-                         document.mozCancelFullScreen || 
-                         document.msExitFullscreen;
-            if (exit) {
-                const res = exit.call(document);
-                if (res && typeof res.catch === 'function') {
-                    res.catch(() => {});
+        document.body.classList.remove('is-fullscreen-fallback');
+        const isNativeFs = !!(document.fullscreenElement || 
+                              document.webkitFullscreenElement || 
+                              document.mozFullScreenElement || 
+                              document.msFullscreenElement);
+        if (isNativeFs) {
+            try {
+                const exit = document.exitFullscreen || 
+                             document.webkitExitFullscreen || 
+                             document.mozCancelFullScreen || 
+                             document.msExitFullscreen;
+                if (exit) {
+                    const res = exit.call(document);
+                    if (res && typeof res.catch === 'function') {
+                        res.catch(() => {});
+                    }
                 }
-            }
-        } catch (e) {
-            console.warn('Exit fullscreen error:', e);
+            } catch (e) {}
         }
+        this.updateFullscreenUi(false);
+        this.resizeCanvas();
     },
 
     toggleFullscreen() {
-        const isFs = document.fullscreenElement || 
-                     document.webkitFullscreenElement || 
-                     document.mozFullScreenElement || 
-                     document.msFullscreenElement;
-        if (!isFs) {
-            this.requestFullscreen();
-        } else {
+        const isNativeFs = !!(document.fullscreenElement || 
+                              document.webkitFullscreenElement || 
+                              document.mozFullScreenElement || 
+                              document.msFullscreenElement);
+        const isFallbackFs = document.body.classList.contains('is-fullscreen-fallback');
+
+        if (isNativeFs || isFallbackFs) {
             this.exitFullscreen();
+        } else {
+            this.requestFullscreen();
         }
-        AudioEngine.playClick();
+        if (window.AudioEngine) AudioEngine.playClick();
     },
 
     // =========================================================================

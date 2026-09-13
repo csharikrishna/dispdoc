@@ -193,6 +193,19 @@
                 });
             }
 
+            // Landing Nav Fullscreen toggle button
+            const landingFsBtn = document.getElementById('btnLandingFullscreen');
+            if (landingFsBtn) {
+                landingFsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (window.App && typeof window.App.toggleFullscreen === 'function') {
+                        window.App.toggleFullscreen();
+                    } else {
+                        this.enterStudioFullscreen();
+                    }
+                });
+            }
+
             // Checklist 4-step acceptance button
             const checklistBtn = document.querySelector('.btn-checklist-launch');
             if (checklistBtn) {
