@@ -2,915 +2,463 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
-    <meta name="description" content="DisplayDoctor Pro - Professional Display Diagnostics, OLED True Black, Ghosting Pursuit, and Calibration Suite.">
-    <meta name="theme-color" content="#0a0c10">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="DisplayDoctor Pro - Hardware-grade display diagnostics, OLED 0-nit true black, 540Hz UFO ghosting pursuit, and panel calibration in your browser.">
+    <meta name="keywords" content="display tester, oled test, dead pixel checker, ufo ghosting test, ips backlight bleed, subpixel text fringing, display calibration">
+    <meta name="theme-color" content="#08090d">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" href="favicon.ico">
-    <title>DisplayDoctor Pro // Professional Display Diagnostics & Calibration</title>
-    
+    <title>DisplayDoctor Pro // Hardware-Grade Display Diagnostics & OLED Calibration</title>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Unified Professional Stylesheet -->
-    <link rel="stylesheet" href="styles.css">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="landing.css">
 </head>
 <body>
 
-    <!-- Safety / Photosensitivity Advisory Modal -->
-    <div id="warningModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="warningTitle">
-        <div class="modal-card warning-card">
-            <div class="warning-icon-wrap" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <h1 id="warningTitle">Photosensitivity & Visual Stress Advisory</h1>
-            <p class="warning-lead">
-                DisplayDoctor Pro contains rapid strobe, high-frequency chromatic flashes, and visual stress patterns engineered for display panel testing.
-            </p>
-            <p class="warning-sub">
-                These patterns may cause discomfort or seizures in photosensitive individuals. Discontinue testing immediately if you experience dizziness, nausea, headache, or visual fatigue.
-            </p>
-            <div class="warning-actions">
-                <label class="checkbox-container" id="enterFullscreenWarningLabel">
-                    <input type="checkbox" id="enterFullscreenWarningCheck" checked>
-                    <span class="checkmark"></span>
-                    <strong>Always Launch Tests in Fullscreen Mode</strong>
-                </label>
-                <button id="acceptWarningBtn" class="btn-primary-action">I Understand & Enter Studio</button>
-            </div>
-        </div>
-    </div>
+    <!-- Ambient Visual Glow -->
+    <div class="ambient-glow" aria-hidden="true"></div>
 
-    <!-- Diagnostic Canvas Viewport (Background / Fullscreen Mode) -->
-    <canvas id="displayCanvas" aria-label="Display Diagnostic Canvas"></canvas>
+    <!-- Header Navigation -->
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <a href="./" class="brand" title="DisplayDoctor Pro Home">
+                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <span class="brand-title">DisplayDoctor <span class="pro-badge">PRO</span></span>
+            </a>
 
-    <!-- Notification Toast Overlay -->
-    <div id="mobileToast" class="notification-toast" style="display: none;"></div>
-
-    <!-- Targeted Stuck Pixel Reviver Box -->
-    <div id="pixelReviver" class="pixel-reviver-box" style="display: none;" title="Drag directly over stuck pixel">
-        <div class="reviver-handle">REVIVER</div>
-    </div>
-
-    <!-- =====================================================================
-         MAIN DASHBOARD VIEW (Studio View)
-         ===================================================================== -->
-    <div id="dashboardView" class="dashboard-wrapper">
-        
-        <!-- Header / Navigation Bar -->
-        <header class="app-header">
-            <div class="header-left">
-                <div class="brand-badge">
-                    <svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
-                    </svg>
-                    <span class="brand-title">DisplayDoctor <span class="pro-tag">PRO</span></span>
-                </div>
-            </div>
-
-            <!-- Category Filter Tabs -->
-            <nav class="nav-filters" id="categoryNav">
-                <button class="nav-tab active" data-filter="all">All Tests</button>
-                <button class="nav-tab" data-filter="oled">OLED</button>
-                <button class="nav-tab" data-filter="ips">IPS / Gaming</button>
-                <button class="nav-tab" data-filter="mobile">Touch & Mobile</button>
-                <button class="nav-tab" data-filter="color">Color & Gamma</button>
-                <button class="nav-tab" data-filter="stress">Stress</button>
+            <nav class="nav-links" aria-label="Main Navigation">
+                <a href="#features" class="nav-link">Capabilities</a>
+                <a href="#tests" class="nav-link">24 Diagnostic Tests</a>
+                <a href="#checklist" class="nav-link">Panel Guide</a>
+                <a href="#faq" class="nav-link">FAQ</a>
             </nav>
 
-            <!-- Header Tool Actions -->
-            <div class="header-tools">
-                <button id="btnRunAllTestsHeader" class="btn-tool btn-header-test-all" title="Run All 24 Display Tests in Fullscreen Sequence">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    <span class="tool-text">Test All</span>
-                </button>
-                <div class="tool-divider"></div>
-                <button id="btnToggleTheme" class="btn-tool" title="Toggle Light / Dark Theme">
+            <div class="nav-actions">
+                <button id="btnToggleTheme" class="btn-icon" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
                     <span id="themeIcon">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     </span>
-                    <span class="tool-text" id="themeLabel">Light</span>
                 </button>
-                <button id="btnWizard" class="btn-tool" title="Start 2-Minute Guided Diagnostic">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <span class="tool-text">Wizard</span>
-                </button>
-                <button id="btnOpenReport" class="btn-tool" title="View Diagnostic Health Report">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    <span class="tool-text">Report</span>
-                </button>
-                <div class="tool-divider"></div>
-                <button id="btnToggleMute" class="btn-tool icon-only" title="Toggle Sound (M)">
-                    <span id="muteIcon">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <a href="https://github.com/csharikrishna/dispdoc" target="_blank" rel="noopener noreferrer" class="btn-icon" title="GitHub Repository" aria-label="GitHub Repository">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                </a>
+                <a href="./studio/" class="btn-launch-nav" title="Launch Full Diagnostic Studio">
+                    <span>Launch Studio</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Hero Section -->
+    <section class="hero-section">
+        <div class="container hero-content">
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                <span>PRODUCTION CALIBRATION SUITE • v4.0</span>
+            </div>
+
+            <h1 class="hero-title">
+                Hardware-Grade Display Diagnostics &amp; <span class="gradient-text">OLED Calibration</span>
+            </h1>
+
+            <p class="hero-desc">
+                24 specialized full-panel diagnostic patterns engineered for OLED 0-nit shutoff, 540Hz ghosting pursuit, subpixel text fringing, and panel uniformity. 100% client-side, zero install, pure hardware precision.
+            </p>
+
+            <div class="hero-actions">
+                <a href="./studio/" class="btn-primary-hero" title="Open Full 24-Test Diagnostic Suite">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Launch Diagnostic Studio</span>
+                </a>
+                <a href="#features" class="btn-secondary-hero">
+                    <span>Explore Capabilities</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                </a>
+            </div>
+
+            <!-- Live Hardware Telemetry Panel Embedded in Hero -->
+            <div class="hero-telemetry-panel">
+                <div class="telemetry-panel-top">
+                    <span class="panel-header-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        LIVE HARDWARE TELEMETRY
                     </span>
-                </button>
-                <button id="btnToggleDpr" class="btn-tool icon-only" title="Toggle Native HiDPI 1:1 Pixel Mapping">
-                    <span id="dprLabel">1:1</span>
-                </button>
-                <button id="btnToggleStats" class="btn-tool icon-only" title="Toggle Telemetry Panel (S)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                </button>
-                <button id="btnToggleFullscreen" class="btn-tool icon-only" title="Toggle Fullscreen (F)">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M21 15v6h-6m6 0l-7-7M3 9V3h6M3 3l7 7"/></svg>
-                </button>
-            </div>
-        </header>
-
-        <!-- Unified Studio Hero & Telemetry Command Bar -->
-        <section class="studio-command-bar">
-            <div class="studio-hero-main">
-                <div class="studio-badge">
-                    <span class="status-pulse"></span>
-                    <span>STUDIO CALIBRATION SUITE • v4.0</span>
-                </div>
-                <h1 class="studio-title">Professional Display Diagnostics & Calibration</h1>
-                <p class="studio-desc">Hardware-grade test suite engineered for OLED true blacks, high-refresh gaming motion, color bit-depth, and panel uniformity.</p>
-                <div class="studio-actions">
-                    <button id="btnRunAllTestsHero" class="btn-primary-action" title="Run All 24 Tests in Fullscreen Mode">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                        <span>Run Full Suite (24 Tests)</span>
-                    </button>
-                    <button id="btnWizardHero" class="btn-secondary-action" title="Start 2-Minute Guided Diagnostic">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        <span>Guided Wizard</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="studio-telemetry-card">
-                <div class="telemetry-card-header">
-                    <span class="telemetry-label">HARDWARE TELEMETRY</span>
-                    <label class="toggle-checkbox" title="Automatically request fullscreen when any test is launched">
-                        <input type="checkbox" id="autoFullscreenCheck" checked>
-                        <span class="toggle-label">Auto Fullscreen</span>
-                    </label>
-                </div>
-                <div class="telemetry-metrics-grid">
-                    <div class="metric-cell">
-                        <span class="metric-k">REFRESH RATE</span>
-                        <span class="metric-v highlight-cyan" id="bannerRefresh">Detecting...</span>
-                    </div>
-                    <div class="metric-cell">
-                        <span class="metric-k">RESOLUTION</span>
-                        <span class="metric-v" id="bannerRes">--</span>
-                    </div>
-                    <div class="metric-cell">
-                        <span class="metric-k">PIXEL RATIO</span>
-                        <span class="metric-v" id="bannerDpr">--</span>
-                    </div>
-                    <div class="metric-cell">
-                        <span class="metric-k">COLOR DEPTH</span>
-                        <span class="metric-v" id="bannerDepth">--</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Main Test Catalog Grid -->
-        <main class="catalog-container">
-            
-            <!-- OLED Category -->
-            <div class="category-block" data-cat="oled">
-                <div class="block-header">
-                    <div class="block-title-group">
-                        <span class="block-kicker">OLED & UNIFORMITY</span>
-                        <h2>Pixel & Uniformity Diagnostics</h2>
-                    </div>
-                    <span class="block-meta">6 Tests • True Black Precision</span>
-                </div>
-                <div class="cards-grid">
-                    
-                    <div class="test-card" data-mode="oled-black">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-                            </div>
-                            <span class="card-key">[ 1 ]</span>
-                        </div>
-                        <h3 class="card-title">0-Nit True Black</h3>
-                        <p class="card-desc">Verify complete individual pixel shutoff and check for display controller glow.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">0.0000 Nits • OLED Shutoff</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="near-black">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
-                            </div>
-                            <span class="card-key">[ 2 ]</span>
-                        </div>
-                        <h3 class="card-title">Near-Black Banding</h3>
-                        <p class="card-desc">1% to 20% IRE gray steps to expose vertical panel banding, shadow noise, and mura.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">1%–20% IRE Stepping</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="burnin">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                            </div>
-                            <span class="card-key">[ 3 ]</span>
-                        </div>
-                        <h3 class="card-title">Burn-In & Dead Pixel Field</h3>
-                        <p class="card-desc">Pure Red, Green, Blue, White screens to check for dead subpixels and ghosted logos.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Full RGBW Matrix</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="pixel-reviver">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
-                            </div>
-                            <span class="card-key">[ 4 ]</span>
-                        </div>
-                        <h3 class="card-title">Stuck Pixel Reviver</h3>
-                        <p class="card-desc">Roving 60Hz color cycling box to exercise and unstick frozen liquid crystal subpixels.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">60Hz Subpixel Cycle</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="subpixel">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                            </div>
-                            <span class="card-key">[ 5 ]</span>
-                        </div>
-                        <h3 class="card-title">Subpixel & Text Fringing</h3>
-                        <p class="card-desc">Check ClearType text alignment and color fringing on QD-OLED & WOLED panels.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">RGB / BGR / WOLED Grid</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="abl">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                            </div>
-                            <span class="card-key">[ 6 ]</span>
-                        </div>
-                        <h3 class="card-title">ABL Window Dimming</h3>
-                        <p class="card-desc">Test Auto Brightness Limiter dimming behavior from 1% to 100% white window areas.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">1%–100% Window Load</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- IPS & Gaming Category -->
-            <div class="category-block" data-cat="ips">
-                <div class="block-header">
-                    <div class="block-title-group">
-                        <span class="block-kicker">IPS & HIGH REFRESH</span>
-                        <h2>Response Time & Motion Pursuit</h2>
-                    </div>
-                    <span class="block-meta">4 Tests • High-FPS Motion</span>
-                </div>
-                <div class="cards-grid">
-                    
-                    <div class="test-card" data-mode="ufo-motion">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                            </div>
-                            <span class="card-key">[ 7 ]</span>
-                        </div>
-                        <h3 class="card-title">UFO Motion Pursuit</h3>
-                        <p class="card-desc">BlurBusters-style motion pursuit test at 120–1440 px/s to check ghosting and overdrive halos.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Ghosting & MPRT Tracking</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="backlight-bleed">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
-                            </div>
-                            <span class="card-key">[ 8 ]</span>
-                        </div>
-                        <h3 class="card-title">Backlight Bleed & Glow</h3>
-                        <p class="card-desc">Dark room corner inspection targets to isolate physical bezel bleed from IPS glow.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Bezel & Corner Targets</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="viewing-angle">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                            </div>
-                            <span class="card-key">[ 9 ]</span>
-                        </div>
-                        <h3 class="card-title">Viewing Angle Shift</h3>
-                        <p class="card-desc">Multi-quadrant color blocks to check off-axis gamma, contrast, and hue shifting.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Off-Axis Delta E Check</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="sharpness">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-cyan">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                            </div>
-                            <span class="card-key">[ 0 ]</span>
-                        </div>
-                        <h3 class="card-title">1:1 Sharpness & Moire</h3>
-                        <p class="card-desc">Single-pixel checkerboard and concentric lines to check scaling distortion and chroma subsampling.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Native 1:1 Pixel Mapping</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Phone & Touch Category -->
-            <div class="category-block" data-cat="mobile">
-                <div class="block-header">
-                    <div class="block-title-group">
-                        <span class="block-kicker">TOUCH & DIGITIZER</span>
-                        <h2>Mobile & Touch Screen Checks</h2>
-                    </div>
-                    <span class="block-meta">3 Tests • Touch Precision</span>
-                </div>
-                <div class="cards-grid">
-                    
-                    <div class="test-card" data-mode="phone-burnin">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                            </div>
-                            <span class="card-key">[ P ]</span>
-                        </div>
-                        <h3 class="card-title">Status Bar & Notch Burn-In</h3>
-                        <p class="card-desc">Simulated Dynamic Island, notch, and status bar boundary to check for permanent icon burn-in.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Island / Notch Geometry</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="pwm-flicker">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h5l2-8 4 16 3-8h6"/></svg>
-                            </div>
-                            <span class="card-key">[ W ]</span>
-                        </div>
-                        <h3 class="card-title">PWM Eye Strain Flicker</h3>
-                        <p class="card-desc">High-contrast moving vertical bars to visualize display pulse-width modulation dimming.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">PWM Dimming Frequency</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="touch-grid">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                            </div>
-                            <span class="card-key">[ T ]</span>
-                        </div>
-                        <h3 class="card-title">Touch Digitizer Grid</h3>
-                        <p class="card-desc">Drag your finger or mouse across the 60-box grid to detect dead touch zones or digitizer faults.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">60-Zone Responsive Grid</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Color & Calibration Category -->
-            <div class="category-block" data-cat="color">
-                <div class="block-header">
-                    <div class="block-title-group">
-                        <span class="block-kicker">GAMMA & COLOR</span>
-                        <h2>Luminance & Dynamic Range Calibration</h2>
-                    </div>
-                    <span class="block-meta">5 Tests • Color Fidelity</span>
-                </div>
-                <div class="cards-grid">
-                    
-                    <div class="test-card" data-mode="grayscale">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-emerald">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
-                            </div>
-                            <span class="card-key">[ G ]</span>
-                        </div>
-                        <h3 class="card-title">32-Step Grayscale Ramp</h3>
-                        <p class="card-desc">Calibrate monitor luminance graduation smoothly from 0% all the way to 100%.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">32 Discrete IRE Steps</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="gamma">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-emerald">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M19 9a15 15 0 0 0-15 11"/></svg>
-                            </div>
-                            <span class="card-key">[ C ]</span>
-                        </div>
-                        <h3 class="card-title">Gamma 2.2 Continuous Ramp</h3>
-                        <p class="card-desc">Verify smooth contrast curve across the entire dynamic range without color clipping.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">sRGB / BT.1886 Curve</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="black-clipping">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-emerald">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-                            </div>
-                            <span class="card-key">[ B ]</span>
-                        </div>
-                        <h3 class="card-title">Black-Level Shadow Clipping</h3>
-                        <p class="card-desc">Calibrate brightness so shadow detail levels 1–3 are faintly visible and not crushed to black.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Levels 1–3 Shadow Range</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="white-clipping">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-emerald">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/></svg>
-                            </div>
-                            <span class="card-key">[ K ]</span>
-                        </div>
-                        <h3 class="card-title">White-Level Highlight Clipping</h3>
-                        <p class="card-desc">Calibrate contrast so highlight detail levels 252–254 do not blow out to solid white.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Levels 252–254 Highlights</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="color-banding">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-emerald">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                            </div>
-                            <span class="card-key">[ D ]</span>
-                        </div>
-                        <h3 class="card-title">Gradient Bit-Depth (Banding)</h3>
-                        <p class="card-desc">16-bit simulated gradients to reveal 6-bit+FRC vs true 8-bit / 10-bit color stepping.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">8-Bit vs 10-Bit Stepping</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Visual Stress Category -->
-            <div class="category-block" data-cat="stress">
-                <div class="block-header">
-                    <div class="block-title-group">
-                        <span class="block-kicker">STRESS BENCHMARKS</span>
-                        <h2>High-FPS Performance Benchmarks</h2>
-                    </div>
-                    <span class="block-meta">6 Tests • GPU & Panel Stress</span>
-                </div>
-                <div class="cards-grid">
-                    
-                    <div class="test-card" data-mode="tv-static">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-rose">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                            </div>
-                            <span class="card-key">[ S ]</span>
-                        </div>
-                        <h3 class="card-title">Fast TV Static</h3>
-                        <p class="card-desc">Bitwise XorShift32 PRNG static noise running at maximum refresh rate (240Hz+ ready).</p>
-                        <div class="card-footer">
-                            <span class="card-meta">32-Bit Bitwise PRNG Noise</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="rgb-noise">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-rose">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 22 22 22 12 2"/></svg>
-                            </div>
-                            <span class="card-key">[ R ]</span>
-                        </div>
-                        <h3 class="card-title">RGB Chromatic Noise</h3>
-                        <p class="card-desc">High-throughput 32-bit color noise stream for GPU & display link testing.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">Chromatic Pixel Stress</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="particles">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-rose">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="5" cy="6" r="2"/></svg>
-                            </div>
-                            <span class="card-key">[ X ]</span>
-                        </div>
-                        <h3 class="card-title">Particle Physics Storm</h3>
-                        <p class="card-desc">Pooled kinetic physics particle storm with collision bounce and spectrum shifts.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">200 Kinetic Physics Entities</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="matrix-rain">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-rose">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="3" x2="4" y2="21"/><line x1="9" y1="7" x2="9" y2="17"/><line x1="14" y1="3" x2="14" y2="21"/><line x1="19" y1="7" x2="19" y2="17"/></svg>
-                            </div>
-                            <span class="card-key">[ M ]</span>
-                        </div>
-                        <h3 class="card-title">Matrix Digital Rain</h3>
-                        <p class="card-desc">Digital phosphor glyph cascades with variable density and intensity control.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">High-FPS Phosphor Stream</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="strobe">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-rose">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                            </div>
-                            <span class="card-key">[ Z ]</span>
-                        </div>
-                        <h3 class="card-title">High-Contrast Strobe</h3>
-                        <p class="card-desc">High frequency black/white strobe with automatic 15-second safety timer.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">15s Auto-Safety Shutter</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                    <div class="test-card" data-mode="autocycle">
-                        <div class="card-header">
-                            <div class="card-icon-wrap icon-rose">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                            </div>
-                            <span class="card-key">[ A ]</span>
-                        </div>
-                        <h3 class="card-title">Auto Cycle Stress</h3>
-                        <p class="card-desc">Clean sequential rotation through visual stress benchmarks with zero frame leak.</p>
-                        <div class="card-footer">
-                            <span class="card-meta">6-Step Auto Sequence</span>
-                            <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- =====================================================================
-         FOCUSED TEST RUNNER CONTROLS BAR (Active only during test execution)
-         ===================================================================== -->
-    <div id="testRunnerBar" class="test-runner-bar" style="display: none;">
-        
-        <!-- Drag Handle to Reposition HUD -->
-        <div id="runnerDragHandle" class="runner-drag-handle" title="Drag to reposition HUD anywhere (Double-click to reset)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="9" cy="19" r="1.8"/><circle cx="15" cy="5" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="15" cy="19" r="1.8"/></svg>
-        </div>
-
-        <!-- Left: Return to Dashboard -->
-        <button id="btnExitTest" class="btn-exit" title="Exit Test & Return to Dashboard (ESC)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>Dashboard</span>
-        </button>
-
-        <!-- Center: Current Test Info & Interactive Toolbars -->
-        <div class="runner-center">
-            <div class="runner-title-badge">
-                <span class="runner-dot"></span>
-                <span id="runnerTestName">TEST RUNNING</span>
-            </div>
-
-            <!-- Dynamic Interactive Controls -->
-            <div id="interactiveControlsWrap" class="runner-interactive-controls">
-                
-                <!-- Near Black IRE -->
-                <div id="nearBlackControls" class="runner-control-group" style="display: none;">
-                    <span class="group-label">IRE</span>
-                    <div class="seg-group">
-                        <button class="seg-btn active" data-ire="0">0%</button>
-                        <button class="seg-btn" data-ire="1">1%</button>
-                        <button class="seg-btn" data-ire="2">2%</button>
-                        <button class="seg-btn" data-ire="3">3%</button>
-                        <button class="seg-btn" data-ire="5">5%</button>
-                        <button class="seg-btn" data-ire="10">10%</button>
-                        <button class="seg-btn" data-ire="20">20%</button>
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span>PROACTIVE MONITOR SYNC</span>
                     </div>
                 </div>
 
-                <!-- UFO Pursuit Speed -->
-                <div id="motionControls" class="runner-control-group" style="display: none;">
-                    <span class="group-label">SPEED</span>
-                    <div class="seg-group">
-                        <button class="seg-btn" data-speed="120">120</button>
-                        <button class="seg-btn" data-speed="240">240</button>
-                        <button class="seg-btn active" data-speed="480">480</button>
-                        <button class="seg-btn" data-speed="960">960</button>
-                        <button class="seg-btn" data-speed="1440">1440</button>
+                <div class="telemetry-specs-row">
+                    <div class="telemetry-spec-tile">
+                        <span class="spec-tile-label">REFRESH RATE</span>
+                        <span class="spec-tile-value cyan" id="heroRefresh">Detecting...</span>
+                    </div>
+                    <div class="telemetry-spec-tile">
+                        <span class="spec-tile-label">RESOLUTION</span>
+                        <span class="spec-tile-value" id="heroRes">--</span>
+                    </div>
+                    <div class="telemetry-spec-tile">
+                        <span class="spec-tile-label">PIXEL RATIO</span>
+                        <span class="spec-tile-value" id="heroDpr">--</span>
+                    </div>
+                    <div class="telemetry-spec-tile">
+                        <span class="spec-tile-label">COLOR DEPTH</span>
+                        <span class="spec-tile-value" id="heroDepth">8-bit (24b)</span>
                     </div>
                 </div>
 
-                <!-- ABL Window Area -->
-                <div id="ablControls" class="runner-control-group" style="display: none;">
-                    <span class="group-label">APL</span>
-                    <div class="seg-group">
-                        <button class="seg-btn" data-apl="1">1%</button>
-                        <button class="seg-btn" data-apl="5">5%</button>
-                        <button class="seg-btn active" data-apl="10">10%</button>
-                        <button class="seg-btn" data-apl="25">25%</button>
-                        <button class="seg-btn" data-apl="50">50%</button>
-                        <button class="seg-btn" data-apl="100">100%</button>
-                    </div>
+                <div class="telemetry-panel-footer">
+                    <span>Measured directly via GPU frame-interval clock &amp; window display API</span>
+                    <span>100% Client-Side • Zero Network Telemetry</span>
                 </div>
-
-                <!-- Subpixel Pattern -->
-                <div id="subpixelControls" class="runner-control-group" style="display: none;">
-                    <span class="group-label">PATTERN</span>
-                    <div class="seg-group">
-                        <button class="seg-btn active" data-sub="text">Text</button>
-                        <button class="seg-btn" data-sub="stripes">RGB</button>
-                        <button class="seg-btn" data-sub="bgr">BGR</button>
-                        <button class="seg-btn" data-sub="grid">Grid</button>
-                    </div>
-                </div>
-
-                <!-- Phone Burnin Overlay -->
-                <div id="phoneControls" class="runner-control-group" style="display: none;">
-                    <span class="group-label">OVERLAY</span>
-                    <div class="seg-group">
-                        <button class="seg-btn active" data-phone-overlay="notch">Notch</button>
-                        <button class="seg-btn" data-phone-overlay="statusbar">Status</button>
-                        <button class="seg-btn" data-phone-overlay="homebar">Home</button>
-                    </div>
-                </div>
-
-                <!-- Reviver Controls -->
-                <div id="reviverControls" class="runner-control-group" style="display: none;">
-                    <span class="group-label">SIZE</span>
-                    <div class="seg-group">
-                        <button class="seg-btn" data-reviver-size="30">30px</button>
-                        <button class="seg-btn active" data-reviver-size="60">60px</button>
-                        <button class="seg-btn" data-reviver-size="120">120px</button>
-                        <button class="seg-btn" data-reviver-mode="fullscreen">Fullscreen</button>
-                    </div>
-                </div>
-
             </div>
         </div>
+    </section>
 
-        <!-- Right: Actions & Navigation -->
-        <div class="runner-right">
-            <div id="testAllBadge" class="test-all-badge" style="display: none;" title="Test All Automated Sequence">
-                <span class="test-all-icon">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </span>
-                <span id="testAllStepText">1/24</span>
-                <span id="testAllCountdown" class="countdown-tag">4s</span>
+    <!-- Key Capabilities Section -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-kicker">ENGINEERING PRECISION</span>
+                <h2 class="section-title">Built for Discerning Display Enthusiasts &amp; Engineers</h2>
+                <p class="section-desc">Traditional compressed video tests on YouTube introduce compression artifacts and 8-bit banding. DisplayDoctor renders 1:1 uncompressed canvas buffers directly on your GPU.</p>
             </div>
-            <div class="safety-indicator" id="safetyBadge" style="display: none;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span id="safetyTimerText">15s</span>
-            </div>
-            <button id="btnPrevTest" class="runner-btn icon-only" title="Previous Test (◀)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button id="btnPauseTest" class="runner-btn icon-only" title="Pause / Resume (Space)">
-                <span id="pauseIcon">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                </span>
-            </button>
-            <button id="btnNextTest" class="runner-btn icon-only" title="Next Test (▶)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button id="btnHideHud" class="runner-btn icon-only btn-hide-hud" title="Hide HUD for Pure View (H / Tap canvas to restore)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-        </div>
-    </div>
 
-    <!-- =====================================================================
-         TELEMETRY & HARDWARE PANEL (Toggleable via 'S' or button)
-         ===================================================================== -->
-    <aside id="statsPanel" class="stats-panel" aria-label="Hardware & Performance Metrics" style="display: none;">
-        <div class="panel-header">
-            <span class="panel-title-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                <span>HARDWARE TELEMETRY</span>
-            </span>
-            <button id="closeStatsBtn" class="close-mini-btn" title="Close Panel">&times;</button>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card highlight">
-                <span class="stat-label">FPS</span>
-                <span class="stat-val fps-high" id="statFps">--</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">FRAME TIME</span>
-                <span class="stat-val" id="statFrameTime">-- ms</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">P95 JANK</span>
-                <span class="stat-val" id="statP95">-- ms</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">DROPPED</span>
-                <span class="stat-val" id="statDropped">0</span>
-            </div>
-        </div>
-
-        <div class="panel-divider"></div>
-
-        <div class="spec-rows">
-            <div class="spec-row">
-                <span class="spec-k">REFRESH RATE</span>
-                <span class="spec-v highlight-cyan" id="specRefresh">Detecting...</span>
-            </div>
-            <div class="spec-row">
-                <span class="spec-k">CANVAS RES</span>
-                <span class="spec-v" id="specRes">--</span>
-            </div>
-            <div class="spec-row">
-                <span class="spec-k">DEVICE DPR</span>
-                <span class="spec-v" id="specDpr">--</span>
-            </div>
-            <div class="spec-row">
-                <span class="spec-k">COLOR DEPTH</span>
-                <span class="spec-v" id="specDepth">--</span>
-            </div>
-            <div class="spec-row">
-                <span class="spec-k">ACTIVE MODE</span>
-                <span class="spec-v highlight-accent" id="specMode">Standby</span>
-            </div>
-        </div>
-    </aside>
-
-    <!-- =====================================================================
-         GUIDED WIZARD BANNER (Active during Wizard Mode)
-         ===================================================================== -->
-    <div id="wizardBanner" class="wizard-banner" style="display: none;">
-        <div class="wizard-progress-bar">
-            <div id="wizardProgressFill" class="wizard-fill"></div>
-        </div>
-        <div class="wizard-content">
-            <div class="wizard-info">
-                <span class="wizard-step" id="wizardStepText">STEP 1 OF 9</span>
-                <h2 class="wizard-title" id="wizardTitle">OLED Pure Black & Bleed Check</h2>
-                <p class="wizard-prompt" id="wizardPrompt">Look closely around edges and center. Do you see any light leakage, glowing corners, or bright stuck pixels?</p>
-            </div>
-            <div class="wizard-buttons">
-                <button id="wizNoIssuesBtn" class="btn-success">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span>Pass (No Issues)</span>
-                </button>
-                <button id="wizHasIssueBtn" class="btn-danger">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    <span>Issue Detected</span>
-                </button>
-                <button id="wizSkipBtn" class="btn-subtle">Skip →</button>
-                <button id="wizExitBtn" class="btn-subtle">Exit Wizard</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- =====================================================================
-         CERTIFIED DIAGNOSTIC REPORT MODAL
-         ===================================================================== -->
-    <div id="reportModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reportTitle" style="display: none;">
-        <div class="modal-card report-card">
-            
-            <div class="report-header">
-                <div class="report-title-group">
-                    <span class="report-cert-tag">CERTIFIED HARDWARE ASSESSMENT</span>
-                    <h2 id="reportTitle">Display Quality & Health Report</h2>
-                    <span class="report-timestamp" id="reportTimestamp">--</span>
+            <div class="capabilities-grid">
+                <!-- Cap 1: OLED True Black -->
+                <div class="cap-card">
+                    <div class="cap-icon-box">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                    </div>
+                    <h3 class="cap-title">0-Nit True Black Verification</h3>
+                    <p class="cap-desc">Verify absolute pixel shutoff on OLED, QD-OLED, and AMOLED panels. Exposes display controller parasitic glow and verifies true infinite contrast.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">0.0000 Nits</span>
+                        <span class="cap-tag">WOLED / QD-OLED</span>
+                        <span class="cap-tag">Infinite Contrast</span>
+                    </div>
                 </div>
-                <div class="report-score-box">
-                    <span class="score-grade" id="reportGrade">A+</span>
-                    <span class="score-caption">PANEL RATING</span>
+
+                <!-- Cap 2: UFO Motion Pursuit -->
+                <div class="cap-card">
+                    <div class="cap-icon-box purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    </div>
+                    <h3 class="cap-title">High-Refresh UFO Motion Pursuit</h3>
+                    <p class="cap-desc">Calibrated motion test rendering synchronous moving targets up to 540Hz. Evaluate pixel response times, GtG overshoot coronas, and strobe crosstalk.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Up to 540Hz</span>
+                        <span class="cap-tag">GtG Response</span>
+                        <span class="cap-tag">Overshoot Coronas</span>
+                    </div>
+                </div>
+
+                <!-- Cap 3: Subpixel & Text Fringing -->
+                <div class="cap-card">
+                    <div class="cap-icon-box emerald">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                    </div>
+                    <h3 class="cap-title">ClearType &amp; Subpixel Fringing</h3>
+                    <p class="cap-desc">Inspect triangular QD-OLED and RWBG WOLED subpixel layouts. Detect chromatic aberrations on high-contrast black/white text rendering.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">ClearType</span>
+                        <span class="cap-tag">QD-OLED Gen 1/2/3</span>
+                        <span class="cap-tag">WOLED RWBG</span>
+                    </div>
+                </div>
+
+                <!-- Cap 4: Near-Black Banding -->
+                <div class="cap-card">
+                    <div class="cap-icon-box">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                    </div>
+                    <h3 class="cap-title">1% to 20% IRE Near-Black Banding</h3>
+                    <p class="cap-desc">High-precision grayscale stepping designed to reveal vertical panel banding, shadow noise, and dirty screen effect (DSE) in low-luminance zones.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">1% - 20% IRE</span>
+                        <span class="cap-tag">DSE Detection</span>
+                        <span class="cap-tag">Mura Analysis</span>
+                    </div>
+                </div>
+
+                <!-- Cap 5: Backlight Bleed vs IPS Glow -->
+                <div class="cap-card">
+                    <div class="cap-icon-box purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+                    </div>
+                    <h3 class="cap-title">Backlight Bleed &amp; IPS Glow</h3>
+                    <p class="cap-desc">Distinguish between mechanical edge-pinch backlight bleed and angular IPS glow using crosshair angle comparison and deep black fields.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">IPS &amp; Mini-LED</span>
+                        <span class="cap-tag">Bezel Pinch</span>
+                        <span class="cap-tag">Uniformity Ratio</span>
+                    </div>
+                </div>
+
+                <!-- Cap 6: Stuck Pixel Reviver -->
+                <div class="cap-card">
+                    <div class="cap-icon-box emerald">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <h3 class="cap-title">Subpixel Cycling Reviver</h3>
+                    <p class="cap-desc">Targeted 60Hz RGB cycling reticle you can drag directly over stuck liquid crystal subpixels to unfreeze sluggish transistors.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Draggable Target</span>
+                        <span class="cap-tag">60Hz Rapid Pulse</span>
+                        <span class="cap-tag">Subpixel Exercise</span>
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="report-body">
-                
-                <!-- Detected Specifications Section -->
-                <div class="report-section">
-                    <h3 class="section-title">Hardware Specifications</h3>
-                    <div class="specs-table-grid">
-                        <div class="spec-tile">
-                            <span class="tile-k">Reported Resolution</span>
-                            <span class="tile-v" id="repRes">--</span>
+    <!-- Panel Inspection Checklist Section -->
+    <section class="section" id="checklist">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-kicker">RETURN POLICY WINDOW</span>
+                <h2 class="section-title">New Monitor Inspection Checklist</h2>
+                <p class="section-desc">Run this 4-step sequence within your retailer return window to ensure your new display has zero panel defects.</p>
+            </div>
+
+            <div class="panel-checklist-wrap">
+                <div class="checklist-left">
+                    <h3>The 5-Minute Panel Audit</h3>
+                    <p>Before throwing away the packaging, execute these 4 tests in a dark room:</p>
+
+                    <div class="checklist-items">
+                        <div class="check-step">
+                            <div class="step-num">1</div>
+                            <div class="step-content">
+                                <h4>0-Nit True Black &amp; Bleed</h4>
+                                <p>Launch in fullscreen. Check for bezel light leakage at edges vs. angular glow when shifting your head.</p>
+                            </div>
                         </div>
-                        <div class="spec-tile">
-                            <span class="tile-k">Refresh Rate</span>
-                            <span class="tile-v" id="repRefresh">--</span>
+
+                        <div class="check-step">
+                            <div class="step-num">2</div>
+                            <div class="step-content">
+                                <h4>Dead &amp; Stuck Subpixel Field</h4>
+                                <p>Inspect pure Red, Green, Blue, and White screens. Verify every single subpixel illuminates correctly.</p>
+                            </div>
                         </div>
-                        <div class="spec-tile">
-                            <span class="tile-k">Pixel Ratio (DPR)</span>
-                            <span class="tile-v" id="repDpr">--</span>
+
+                        <div class="check-step">
+                            <div class="step-num">3</div>
+                            <div class="step-content">
+                                <h4>5% Near-Black Vertical Banding</h4>
+                                <p>Display low-IRE gray fields. Check for prominent vertical banding streaks or dirty screen effect (DSE).</p>
+                            </div>
                         </div>
-                        <div class="spec-tile">
-                            <span class="tile-k">Color Depth</span>
-                            <span class="tile-v" id="repDepth">--</span>
+
+                        <div class="check-step">
+                            <div class="step-num">4</div>
+                            <div class="step-content">
+                                <h4>Text Fringing &amp; Motion Clarity</h4>
+                                <p>Verify ClearType edge clarity and observe UFO motion pursuit to confirm overdrive setting has zero inverse ghosting.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Diagnostic Findings Summary -->
-                <div class="report-section">
-                    <h3 class="section-title">Diagnostic Findings</h3>
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>Category / Test</th>
-                                <th>Result</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportBodyTable">
-                            <!-- Populated dynamically via JS -->
-                        </tbody>
-                    </table>
+                <div class="checklist-right">
+                    <div class="comparison-box">
+                        <div class="comparison-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            <span>Panel Technology Comparison</span>
+                        </div>
+
+                        <table class="panel-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>OLED / QD-OLED</th>
+                                    <th>Fast-IPS</th>
+                                    <th>Mini-LED</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Black Level</strong></td>
+                                    <td>0.0000 Nits (Pure)</td>
+                                    <td>0.1 - 0.3 Nits</td>
+                                    <td>Zone-Dependent</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Pixel Response</strong></td>
+                                    <td>&lt; 0.03 ms</td>
+                                    <td>1 - 4 ms</td>
+                                    <td>1 - 4 ms</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Backlight Bleed</strong></td>
+                                    <td>Zero (Per-Pixel)</td>
+                                    <td>Glow Common</td>
+                                    <td>Halo / Blooming</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Burn-In Risk</strong></td>
+                                    <td>Requires Care</td>
+                                    <td>Zero Risk</td>
+                                    <td>Zero Risk</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <a href="./studio/" class="btn-primary-hero" style="width: 100%; justify-content: center; margin-top: 10px;">
+                            <span>Run 5-Minute Guided Wizard</span>
+                        </a>
+                    </div>
                 </div>
-
-                <!-- Tailored Recommendations -->
-                <div class="report-section">
-                    <h3 class="section-title">Engineered Recommendations</h3>
-                    <ul class="recommendation-list" id="reportRecommendations">
-                        <!-- Populated dynamically based on findings -->
-                    </ul>
-                </div>
-
             </div>
-
-            <div class="report-footer">
-                <button id="btnPrintReport" class="btn-primary-action">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    <span>Print / Save PDF</span>
-                </button>
-                <button id="btnExportJson" class="btn-subtle">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    <span>Export JSON</span>
-                </button>
-                <button id="btnCloseReport" class="btn-subtle">Close</button>
-            </div>
-
         </div>
-    </div>
+    </section>
 
-    <!-- Application Engine Script -->
-    <script src="app.js"></script>
+    <!-- 24 Diagnostic Tests Directory Section -->
+    <section class="section" id="tests">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-kicker">FULL CATALOG</span>
+                <h2 class="section-title">24 Hardware-Calibrated Diagnostic Tests</h2>
+                <p class="section-desc">Every test is accessible with instant 1-click execution, draggable floating HUD capsule, and keyboard shortcuts in the studio.</p>
+            </div>
+
+            <div class="capabilities-grid">
+                <div class="cap-card">
+                    <h3 class="cap-title">OLED &amp; Uniformity (6 Tests)</h3>
+                    <p class="cap-desc">0-Nit True Black, Near-Black Banding, Dead Pixel Fields, Subpixel Reviver, ClearType Fringing, and ABL Window Dimming.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Keys: 1, 2, 3, 4, 5, 6</span>
+                    </div>
+                </div>
+
+                <div class="cap-card">
+                    <h3 class="cap-title">Motion &amp; Response (6 Tests)</h3>
+                    <p class="cap-desc">UFO Motion Pursuit, Backlight Bleed &amp; Glow, Viewing Angle Shift, 1:1 Sharpness &amp; Moiré, VRR Flicker Stress, and Color Bands.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Keys: 7, 8, 9, 0, P, W</span>
+                    </div>
+                </div>
+
+                <div class="cap-card">
+                    <h3 class="cap-title">Mobile &amp; Touch (3 Tests)</h3>
+                    <p class="cap-desc">Multi-Touch Matrix Pointer, 240Hz Touch Sampling Latency, and Smartphone AMOLED OLED Burn-In Stress Field.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Keys: T, G, C</span>
+                    </div>
+                </div>
+
+                <div class="cap-card">
+                    <h3 class="cap-title">Color &amp; Gamma (6 Tests)</h3>
+                    <p class="cap-desc">Gamma 2.2 Calibration, Grayscale Contrast Steps, Black Crush &amp; White Clip, RGB 64-Level Ramps, Color Tint, and ANSI Contrast Ratio.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Keys: B, K, D, S, R, X</span>
+                    </div>
+                </div>
+
+                <div class="cap-card">
+                    <h3 class="cap-title">Hardware Stress (3 Tests)</h3>
+                    <p class="cap-desc">Analog TV Static White Noise, 60FPS High-Load Particle Storm, and Dual-Plane Matrix Digital Rain.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Keys: M, Z, A</span>
+                    </div>
+                </div>
+
+                <div class="cap-card" style="border-color: var(--accent-cyan); background: var(--bg-surface-elevated);">
+                    <h3 class="cap-title" style="color: var(--accent-cyan);">Automated "Test All"</h3>
+                    <p class="cap-desc">1-click automated 24-step fullscreen diagnostic cycle with live countdown badge, pause/resume, and auto-generated health report.</p>
+                    <div class="cap-tags">
+                        <span class="cap-tag">Key: Space to Pause</span>
+                        <span class="cap-tag">Automated Handoff</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diagnostic Health Report Preview -->
+    <section class="section">
+        <div class="container">
+            <div class="report-preview-banner">
+                <div class="report-text">
+                    <h3>Certified Display Health Report</h3>
+                    <p>Upon completing diagnostics, DisplayDoctor compiles your panel resolution, refresh rate, 8-bit/10-bit color depth, and pass/warn/fail grades into a shareable inspection certificate.</p>
+                </div>
+                <a href="./studio/" class="report-cta">
+                    <span>Open Studio &amp; Generate Report</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section" id="faq">
+        <div class="container">
+            <div class="section-head">
+                <span class="section-kicker">COMMON QUESTIONS</span>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+            </div>
+
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h3 class="faq-q">Why is this better than watching 4K YouTube test videos?</h3>
+                    <p class="faq-a">YouTube compresses video with lossy codecs (AV1/VP9) which truncates near-black IRE gradations into muddy macroblocks. DisplayDoctor renders uncompressed mathematical gradients directly on your GPU canvas with 1:1 pixel mapping.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h3 class="faq-q">Why does my 8-bit monitor show 24-bit?</h3>
+                    <p class="faq-a">Monitors are rated by bits per color channel (8 bits Red + 8 bits Green + 8 bits Blue). The total color depth across all 3 channels is 24 bits (16.7 million colors). DisplayDoctor formats this as 8-bit (24b) to match both hardware conventions and operating system metrics.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h3 class="faq-q">How does the 0-Nit True Black test work?</h3>
+                    <p class="faq-a">The test sets every pixel to RGB(0,0,0) in exclusive fullscreen mode. In an OLED panel, individual pixels completely shut off with 0 emitted photons. If you see glow, the display controller is leaking bias current or the panel is not true OLED.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h3 class="faq-q">Does DisplayDoctor install anything on my machine?</h3>
+                    <p class="faq-a">No. It is a 100% client-side web application built with zero dependencies. No software downloads, no browser extensions, and no telemetry data transmitted.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div class="footer-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <span>DisplayDoctor Pro // Open-Source Display Diagnostics Suite</span>
+            </div>
+
+            <div class="footer-links">
+                <a href="./studio/" class="footer-link">Diagnostic Studio</a>
+                <a href="https://github.com/csharikrishna/dispdoc" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+                <a href="./studio/#warningModal" class="footer-link">Safety Advisory</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="landing.js"></script>
 </body>
 </html>
