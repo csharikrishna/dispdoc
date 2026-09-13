@@ -485,58 +485,172 @@ const App = {
         this.renderStandby();
     },
 
-    // Photosensitivity Warning State
+    // Photosensitivity & Fullscreen Calibration Gate
     checkWarningStatus() {
         const accepted = localStorage.getItem('dispdoc_warning_accepted') === 'true';
         const modal = document.getElementById('warningModal');
         if (!modal) return;
-        if (accepted) {
-            if (!document.fullscreenElement) {
-                const title = document.getElementById('warningTitle');
-                const lead = modal.querySelector('.warning-lead');
-                const sub = modal.querySelector('.warning-sub');
-                const btn = document.getElementById('acceptWarningBtn');
-                if (title) title.textContent = 'Enter Fullscreen Diagnostic Studio';
-                if (lead) lead.textContent = 'DisplayDoctor Pro requires exclusive fullscreen mode for uncompressed pixel mapping, 0-nit blackouts, and calibrated motion tests.';
-                if (sub) sub.style.display = 'none';
-                if (btn) btn.textContent = 'Enter Studio (Fullscreen)';
-                modal.style.display = 'flex';
-            } else {
-                modal.style.display = 'none';
+
+        const isFs = !!(document.fullscreenElement || 
+                        document.webkitFullscreenElement || 
+                        document.mozFullScreenElement || 
+                        document.msFullscreenElement);
+
+        if (accepted && isFs) {
+            // Already in fullscreen from a previous session entry — skip modal
+            modal.style.display = 'none';
+            return;
+        }
+
+        // Show the 2-step gate modal with current fullscreen truth
+        this.syncModalFullscreenState(isFs);
+        modal.style.display = 'flex';
+    },
+
+    syncModalFullscreenState(isFs) {
+        const fsBtn = document.getElementById('modalFullscreenBtn');
+        const fsBtnText = document.getElementById('modalFsBtnText');
+        const fsBadge = document.getElementById('modalFsBadge');
+        const fsHint = document.getElementById('modalFsHint');
+        const acceptBtn = document.getElementById('acceptWarningBtn');
+
+        if (isFs) {
+            if (fsBtn) {
+                fsBtn.classList.add('is-fullscreen-verified');
+                fsBtn.classList.remove('btn-primary-action');
+            }
+            if (fsBtnText) fsBtnText.textContent = '✓ Fullscreen Active';
+            if (fsBadge) {
+                fsBadge.textContent = 'Verified';
+                fsBadge.className = 'gate-badge badge-success';
+            }
+            if (fsHint) {
+                fsHint.innerHTML = '<span class="hint-success">✓ Hardware fullscreen engaged. You may now enter the diagnostic studio.</span>';
+            }
+            if (acceptBtn) {
+                acceptBtn.disabled = false;
+                acceptBtn.classList.remove('btn-secondary-action');
+                acceptBtn.classList.add('btn-primary-action');
+                // Small delay so focus lands after the fullscreen transition settles
+                setTimeout(() => {
+                    acceptBtn.focus();
+                    this.showToast('Fullscreen verified — click "Enter Studio" to proceed');
+                }, 400);
+            }
+        } else {
+            if (fsBtn) {
+                fsBtn.classList.remove('is-fullscreen-verified');
+                fsBtn.classList.add('btn-primary-action');
+            }
+            if (fsBtnText) fsBtnText.textContent = '1. Enter Fullscreen Mode';
+            if (fsBadge) {
+                fsBadge.textContent = 'Required';
+                fsBadge.className = 'gate-badge';
+            }
+            if (fsHint) {
+                fsHint.textContent = 'Fullscreen maximizes the canvas and hides browser UI for calibrated 1:1 hardware diagnostics.';
+            }
+            if (acceptBtn) {
+                acceptBtn.disabled = true;
+                acceptBtn.classList.add('btn-secondary-action');
+                acceptBtn.classList.remove('btn-primary-action');
             }
         }
     },
 
-    acceptWarning() {
-        const warningCheck = document.getElementById('enterFullscreenWarningCheck');
-        const shouldFullscreen = !warningCheck || warningCheck.checked;
-        if (shouldFullscreen) {
-            const docEl = document.documentElement;
-            const req = docEl.requestFullscreen || 
-                        docEl.webkitRequestFullscreen || 
-                        docEl.webkitRequestFullScreen || 
-                        docEl.mozRequestFullScreen || 
-                        docEl.msRequestFullscreen;
-            if (req) {
-                try {
-                    const res = req.call(docEl);
-                    if (res && typeof res.catch === 'function') res.catch(() => {});
-                } catch (e) {}
-            }
+    handleModalFullscreenClick() {
+        AudioEngine.playClick();
+
+        // Check if already in fullscreen (e.g. user pressed F11 before clicking)
+        const alreadyFs = !!(document.fullscreenElement || 
+                              document.webkitFullscreenElement || 
+                              document.mozFullScreenElement || 
+                              document.msFullscreenElement);
+        if (alreadyFs) {
+            this.syncModalFullscreenState(true);
+            return;
         }
 
+        const docEl = document.documentElement;
+        const req = docEl.requestFullscreen || 
+                    docEl.webkitRequestFullscreen || 
+                    docEl.webkitRequestFullScreen || 
+                    docEl.mozRequestFullScreen || 
+                    docEl.msRequestFullscreen;
+
+        // Show pending state
+        const fsBtnText = document.getElementById('modalFsBtnText');
+        const fsBadge = document.getElementById('modalFsBadge');
+        const fsHint = document.getElementById('modalFsHint');
+        if (fsBtnText) fsBtnText.textContent = 'Requesting Fullscreen…';
+        if (fsBadge) { fsBadge.textContent = 'Pending'; fsBadge.className = 'gate-badge badge-warning'; }
+        if (fsHint) fsHint.innerHTML = '<span>Click anywhere outside the browser toolbar if prompted, then try again.</span>';
+
+        if (req) {
+            try {
+                const res = req.call(docEl);
+                if (res && typeof res.then === 'function') {
+                    res.then(() => {
+                        // fullscreenchange listener will call syncModalFullscreenState(true)
+                    }).catch((err) => {
+                        console.warn('Fullscreen rejected:', err);
+                        this.showModalFsError();
+                    });
+                }
+                // If synchronous (older APIs) — fullscreenchange will fire
+            } catch (e) {
+                console.warn('Fullscreen error:', e);
+                this.showModalFsError();
+            }
+        } else {
+            this.showModalFsError();
+        }
+    },
+
+    showModalFsError() {
+        const fsBtn = document.getElementById('modalFullscreenBtn');
+        const fsBtnText = document.getElementById('modalFsBtnText');
+        const fsBadge = document.getElementById('modalFsBadge');
+        const fsHint = document.getElementById('modalFsHint');
+
+        if (fsBtn) { fsBtn.classList.remove('is-fullscreen-verified'); }
+        if (fsBtnText) fsBtnText.textContent = '1. Enter Fullscreen Mode';
+        if (fsBadge) { fsBadge.textContent = 'Blocked'; fsBadge.className = 'gate-badge badge-warning'; }
+        if (fsHint) {
+            fsHint.innerHTML = '<span class="hint-warn">Browser blocked fullscreen. Press <strong>F11</strong> to go fullscreen, then Step 2 will unlock automatically.</span>';
+        }
+        // Step 2 stays DISABLED — do not unlock on failure
+    },
+
+    proceedWindowed() {
+        AudioEngine.playClick();
+        localStorage.setItem('dispdoc_warning_accepted', 'true');
+        const modal = document.getElementById('warningModal');
+        if (modal) modal.style.display = 'none';
+        this.showToast('Studio Ready // Windowed Mode (Press F11 anytime)', 3000);
+    },
+
+    acceptWarning() {
         AudioEngine.init();
         AudioEngine.playClick();
         localStorage.setItem('dispdoc_warning_accepted', 'true');
-        localStorage.setItem('dispdoc_autofullscreen', shouldFullscreen ? 'true' : 'false');
-        const autoCheck = document.getElementById('autoFullscreenCheck');
-        if (autoCheck) autoCheck.checked = shouldFullscreen;
 
         const modal = document.getElementById('warningModal');
         if (modal) {
             modal.style.display = 'none';
         }
-        this.showToast('Diagnostics Ready // Fullscreen Active');
+
+        const isNativeFs = !!(document.fullscreenElement || 
+                              document.webkitFullscreenElement || 
+                              document.mozFullScreenElement || 
+                              document.msFullscreenElement);
+        if (isNativeFs) {
+            this.showToast('Studio Ready // Fullscreen Active');
+        } else if (document.body.classList.contains('is-fullscreen-fallback')) {
+            this.showToast('Studio Ready // Full Viewport (Press F11 for Native)');
+        } else {
+            this.showToast('Studio Ready // Windowed Mode (Press F11 anytime)');
+        }
     },
 
     showToast(message, duration = 2200) {
@@ -702,22 +816,15 @@ const App = {
     // EVENT LISTENERS & CONTROLS
     // ======================================================================
     setupEventListeners() {
-        // 1. Warning Modal Controls
+        // 1. Warning Modal Controls (2-Step Gated Fullscreen Entry)
+        const modalFsBtn = document.getElementById('modalFullscreenBtn');
+        if (modalFsBtn) modalFsBtn.addEventListener('click', () => this.handleModalFullscreenClick());
+
         const acceptBtn = document.getElementById('acceptWarningBtn');
         if (acceptBtn) acceptBtn.addEventListener('click', () => this.acceptWarning());
 
-        const warningCheck = document.getElementById('enterFullscreenWarningCheck');
-        if (warningCheck) {
-            const saved = localStorage.getItem('dispdoc_autofullscreen');
-            if (saved !== null) {
-                warningCheck.checked = saved === 'true';
-            }
-            warningCheck.addEventListener('change', () => {
-                localStorage.setItem('dispdoc_autofullscreen', warningCheck.checked ? 'true' : 'false');
-                const autoCheck = document.getElementById('autoFullscreenCheck');
-                if (autoCheck) autoCheck.checked = warningCheck.checked;
-            });
-        }
+        const bypassBtn = document.getElementById('btnProceedWindowed');
+        if (bypassBtn) bypassBtn.addEventListener('click', () => this.proceedWindowed());
 
         // 2. Dashboard Header & Hero Tools
         const runAllHeader = document.getElementById('btnRunAllTestsHeader');
@@ -1161,6 +1268,11 @@ const App = {
                             document.mozFullScreenElement || 
                             document.msFullscreenElement);
             this.updateFullscreenUi(isFs);
+            // Only sync the modal gate state if the modal is currently visible
+            const modal = document.getElementById('warningModal');
+            if (modal && modal.style.display !== 'none') {
+                this.syncModalFullscreenState(isFs);
+            }
             this.resizeCanvas();
         };
 

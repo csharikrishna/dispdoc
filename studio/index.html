@@ -35,13 +35,31 @@
             <p class="warning-sub">
                 These patterns may cause discomfort or seizures in photosensitive individuals. Discontinue testing immediately if you experience dizziness, nausea, headache, or visual fatigue.
             </p>
-            <div class="warning-actions">
-                <label class="checkbox-container" id="enterFullscreenWarningLabel">
-                    <input type="checkbox" id="enterFullscreenWarningCheck" checked>
-                    <span class="checkmark"></span>
-                    <strong>Always Launch Tests in Fullscreen Mode</strong>
-                </label>
-                <button id="acceptWarningBtn" class="btn-primary-action">I Understand & Enter Studio</button>
+            <div class="modal-gate-container">
+                <!-- Step 1: Fullscreen Modal Button -->
+                <button id="modalFullscreenBtn" class="btn-modal-gate-action btn-gate-fullscreen" type="button" aria-label="Step 1: Enter Fullscreen Mode">
+                    <svg class="gate-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6m0-6L14 10M9 21H3v-6m0 6l7-7M21 15v6h-6m6 0l-7-7M3 9V3h6M3 3l7 7"/></svg>
+                    <span id="modalFsBtnText">1. Enter Fullscreen Mode</span>
+                    <span class="gate-badge" id="modalFsBadge">Required</span>
+                </button>
+
+                <!-- Feedback Hint -->
+                <div class="modal-fs-hint" id="modalFsHint">
+                    <span>Fullscreen maximizes the canvas and hides browser UI for calibrated 1:1 hardware diagnostics.</span>
+                </div>
+
+                <!-- Step 2: Confirmation / Enter Studio Button (Gated until step 1 active) -->
+                <button id="acceptWarningBtn" class="btn-modal-gate-action btn-gate-confirm" type="button" disabled aria-label="Step 2: Enter Diagnostic Studio">
+                    <svg class="gate-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span id="acceptWarningBtnText">2. Enter Diagnostic Studio</span>
+                </button>
+
+                <!-- Accessible windowed bypass -->
+                <div class="modal-bypass-row">
+                    <button id="btnProceedWindowed" class="btn-link-subtle" type="button">
+                        Or continue in windowed mode (Press F11 anytime)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
