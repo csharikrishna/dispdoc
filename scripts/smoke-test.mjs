@@ -196,7 +196,8 @@ async function testStudio(browser) {
     check('HUD appears when the pointer moves near it', await hudVisible());
     await shot(page, 'studio-hud');
     await page.mouse.move(720, 150, { steps: 5 });
-    await sleep(1000);
+    // Hide delay (600 ms) + fade (220 ms), with headroom for slow CI machines.
+    await sleep(1600);
     check('HUD hides again after the pointer leaves', !(await hudVisible()));
     await page.keyboard.press('h');
     await sleep(300);
